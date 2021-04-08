@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <link rel="icon" href="#"/>
+    <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width"/>
+    <meta name="theme-color" content="#000000"/>
+    <meta name="description" content="Demo on adding virtual background to a live video stream in the browser"/>
+    <!-- WebAssembly SIMD localhost -->
+    <meta http-equiv="origin-trial" content="AodyEMI20aZTApzhWqoBTRthM/3ir59/VcaKpm1RH+NaBC9jbugk/FNPpVZhitz6bCDUQw2s9JtdeKJkuAFQdw8AAABSeyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlTaW1kIiwiZXhwaXJ5IjoxNjIxMzgyMzk5fQ=="/>
+    <!-- WebAssembly SIMD volcomix.github.io -->
+    <meta http-equiv="origin-trial" content="AnNz0QezACeR3YHs6FtzacKxtskVmaq/t6ucr+Z6RGYFopPQ7zZ0Q11lgRnE5evLCxezEu6U/an3nU/phHVOmAMAAABbeyJvcmlnaW4iOiJodHRwczovL3ZvbGNvbWl4LmdpdGh1Yi5pbzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlTaW1kIiwiZXhwaXJ5IjoxNjIxMzgyMzk5fQ=="/>
+<!--    <link rel="apple-touch-icon" href="/virtual-background/logo192.png"/>-->
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+<!--    <link rel="manifest" href="/virtual-background/manifest.json"/>-->
+    <!--
+      Notice the use of /virtual-background in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "/virtual-background/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>Virtual Background</title>
+<!--    <link rel="preconnect" href="https://fonts.gstatic.com"/>-->
+<!--    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"/>-->
+    <script src="public/tflite/tflite.js"></script>
+    <script src="public/tflite/tflite-simd.js"></script>
+</head>
+<body>
+<noscript>You need to enable JavaScript to run this app.</noscript>
+<div id="root"></div>
+<!--
+  This HTML file is a template.
+  If you open it directly in the browser, you will see an empty page.
+
+  You can add webfonts, meta tags, or analytics to this file.wei
+  The build step will place the bundled scripts into the <body> tag.
+
+  To begin the development, run `npm start` or `yarn start`.
+  To create a production bundle, use `npm run build` or `yarn build`.
+-->
+<script src="static/js/bundle.js"></script>
+<script src="static/js/chunk.js"></script>
+<script src="static/js/main.chunk.js"></script>
+
+
+<!-- src文件引入 -->
+<!--<script type="module" src="./src/core/components/BackgroundConfigCard.tsx"></script>-->
+<!--<script type="module" src="./src/core/components/OutputViewer.tsx"></script>-->
+<!--<script type="module" src="./src/core/components/PostProcessingConfigCard.tsx"></script>-->
+<!--<script type="module" src="./src/core/components/SegmentationConfigCard.tsx"></script>-->
+<!--<script type="module" src="./src/core/components/SourceConfigCard.tsx"></script>-->
+<!--<script type="module" src="./src/core/components/SourceViewer.tsx"></script>-->
+<!--<script type="module" src="./src/core/components/ViewerCard.tsx"></script>-->
+<!--<script type="module" src="./src/core/helpers/backgroundHelper.ts"></script>-->
+<!--<script type="module" src="./src/core/helpers/postProcessingHelper.ts"></script>-->
+<!--<script type="module" src="./src/core/helpers/renderingPipelineHelper.ts"></script>-->
+<!--<script type="module" src="./src/core/helpers/segmentationHelper.ts"></script>-->
+<!--<script type="module" src="./src/core/helpers/sourceHelper.ts"></script>-->
+<!--<script type="module" src="./src/core/hooks/useBodyPix.ts"></script>-->
+<!--<script type="module" src="./src/core/hooks/useRenderingPipeline.ts"></script>-->
+<!--<script type="module" src="./src/core/hooks/useStats.ts"></script>-->
+<!--<script type="module" src="./src/core/hooks/useTFLite.ts"></script>-->
+
+
+<!--<script type="module" src="./src/pipelines/canvas2d/canvas2dPipeline.ts"></script>-->
+<!--<script type="module" src="./src/pipelines/helpers/webglHelper.ts"></script>-->
+<!--<script type="module" src="./src/pipelines/webgl2/backgroundBlurStage.ts"></script>-->
+<!--<script type="module" src="./src/pipelines/webgl2/backgroundImageStage.ts"></script>-->
+<!--<script type="module" src="./src/pipelines/webgl2/jointBilateralFilterStage.ts"></script>-->
+<!--<script type="module" src="./src/pipelines/webgl2/resizingStage.ts"></script>-->
+<!--<script type="module" src="./src/pipelines/webgl2/softmaxStage.ts"></script>-->
+<!--<script type="module" src="./src/pipelines/webgl2/webgl2Pipeline.ts"></script>-->
+
+
+<!--<script type="module" src="./src/shared/components/ImageButton.tsx"></script>-->
+<!--<script type="module" src="./src/shared/components/SelectionButton.tsx"></script>-->
+<!--<script type="module" src="./src/shared/components/SelectionIconButton.tsx"></script>-->
+<!--<script type="module" src="./src/shared/components/TumbnailButton.tsx"></script>-->
+<!--<script type="module" src="./src/shared/components/VideoButton.tsx"></script>-->
+<!--<script type="module" src="./src/shared/helpers/thumbnailHelper.ts"></script>-->
+<!--<script type="module" src="./src/shared/hooks/useImageThumbnail.ts"></script>-->
+<!--<script type="module" src="./src/shared/hooks/useVideoThumbnail.ts"></script>-->
+
+
+<!--<script src="./src/App.tsx"></script>-->
+<!--<script src="./src/index.tsx"></script>-->
+<!--<script src="./src/react-app-env.d.ts"></script>-->
+<!--<script src="./src/reportWebVitals.ts"></script>-->
+<!--<script src="./src/setupTests.ts"></script>-->
+
+</body>
+</html>
