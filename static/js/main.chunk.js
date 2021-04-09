@@ -1071,6 +1071,7 @@
 			__webpack_require__.$Refresh$.runtime = __webpack_require__(/*! react-refresh/runtime */ "./node_modules/react-refresh/runtime.js");
 			__webpack_require__.$Refresh$.setup(module.i);
 
+			debugger
 			var _jsxFileName = "D:\\github_learning\\virtual-background\\src\\core\\components\\SegmentationConfigCard.tsx",
 				_s = __webpack_require__.$Refresh$.signature();
 
@@ -2443,8 +2444,11 @@
 				Object(react__WEBPACK_IMPORTED_MODULE_2__["useEffect"])(() => {
 					async function loadBodyPix() {
 						console.warn('Loading TensorFlow.js and BodyPix segmentation model');
+						console.warn('1111111111')
 						await _tensorflow_tfjs__WEBPACK_IMPORTED_MODULE_1__["ready"]();
+						console.warn('2222222222')
 						setBodyPix(await _tensorflow_models_body_pix__WEBPACK_IMPORTED_MODULE_0__["load"]());
+						console.warn('等待这里加载完成后才开始渲染虚拟背景结果。。。。')
 						console.log('TensorFlow.js and BodyPix loaded');
 					}
 
@@ -5984,13 +5988,11 @@
 			/* harmony import */
 			var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 			/* harmony import */
-			var _helpers_thumbnailHelper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/thumbnailHelper */ "./src/shared/helpers/thumbnailHelper.ts");
-			__webpack_require__.$Refresh$.runtime = __webpack_require__(/*! react-refresh/runtime */ "./node_modules/react-refresh/runtime.js");
+			var _helpers_thumbnailHelper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__( "./src/shared/helpers/thumbnailHelper.ts");
+			__webpack_require__.$Refresh$.runtime = __webpack_require__("./node_modules/react-refresh/runtime.js");
 			__webpack_require__.$Refresh$.setup(module.i);
 
 			var _s = __webpack_require__.$Refresh$.signature();
-
-
 			/**
 			 * Returns an image thumbnail URL and a function to revoke it.
 			 */
@@ -6090,7 +6092,9 @@
 				}
 			}
 			/* WEBPACK VAR INJECTION */
-		}.call(this, __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js"), __webpack_require__(/*! ./node_modules/react-dev-utils/refreshOverlayInterop.js */ "./node_modules/react-dev-utils/refreshOverlayInterop.js")))
+		}.call(this
+			, __webpack_require__( "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js")
+			, __webpack_require__("./node_modules/react-dev-utils/refreshOverlayInterop.js")))
 
 		/***/
 	}),
@@ -6220,7 +6224,10 @@
 				}
 			}
 			/* WEBPACK VAR INJECTION */
-		}.call(this, __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js"), __webpack_require__(/*! ./node_modules/react-dev-utils/refreshOverlayInterop.js */ "./node_modules/react-dev-utils/refreshOverlayInterop.js")))
+		}.call(this,
+			__webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js"),
+			__webpack_require__(/*! ./node_modules/react-dev-utils/refreshOverlayInterop.js */ "./node_modules/react-dev-utils/refreshOverlayInterop.js")
+			))
 
 		/***/
 	}),
@@ -6232,72 +6239,12 @@
 	/*! no static exports found */
 	/***/ (function (module, exports, __webpack_require__) {
 
-		__webpack_require__(/*! D:\github_learning\virtual-background\node_modules\@pmmmwh\react-refresh-webpack-plugin\client\ReactRefreshEntry.js */"./node_modules/@pmmmwh/react-refresh-webpack-plugin/client/ReactRefreshEntry.js");
-		__webpack_require__(/*! D:\github_learning\virtual-background\node_modules\react-dev-utils\webpackHotDevClient.js */"./node_modules/react-dev-utils/webpackHotDevClient.js");
+		// __webpack_require__(/*! D:\github_learning\virtual-background\node_modules\@pmmmwh\react-refresh-webpack-plugin\client\ReactRefreshEntry.js */"./node_modules/@pmmmwh/react-refresh-webpack-plugin/client/ReactRefreshEntry.js");
+		// __webpack_require__(/*! D:\github_learning\virtual-background\node_modules\react-dev-utils\webpackHotDevClient.js */"./node_modules/react-dev-utils/webpackHotDevClient.js");
 		module.exports = __webpack_require__(/*! D:\github_learning\virtual-background\src\index.tsx */"./src/index.tsx");
 
 
 		/***/
 	}),
-
-	/***/ 2:
-	/*!****************************!*\
-  !*** node-fetch (ignored) ***!
-  \****************************/
-	/*! no static exports found */
-	/***/ (function (module, exports) {
-
-		/* (ignored) */
-
-		/***/
-	}),
-
-	/***/ 3:
-	/*!**********************!*\
-  !*** util (ignored) ***!
-  \**********************/
-	/*! no static exports found */
-	/***/ (function (module, exports) {
-
-		/* (ignored) */
-
-		/***/
-	}),
-
-	/***/ 4:
-	/*!************************!*\
-  !*** crypto (ignored) ***!
-  \************************/
-	/*! no static exports found */
-	/***/ (function (module, exports) {
-
-		/* (ignored) */
-
-		/***/
-	}),
-
-	/***/ 5:
-	/*!********************************!*\
-  !*** string_decoder (ignored) ***!
-  \********************************/
-	/*! no static exports found */
-	/***/ (function (module, exports) {
-
-		/* (ignored) */
-
-		/***/
-	}),
-
-	/***/ 6:
-	/*!********************!*\
-  !*** fs (ignored) ***!
-  \********************/
-	/*! no static exports found */
-	/***/ (function (module, exports) {
-
-		/* (ignored) */
-
-		/***/
-	})
 
 }, [[1, "runtime-main", 0]]]);
