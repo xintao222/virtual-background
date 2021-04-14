@@ -2168,13 +2168,7 @@
 
 				eventCount.current = 0;
 			}, []);
-			return {
-				fps,
-				durations,
-				beginFrame,
-				addFrameEvent,
-				endFrame
-			};
+			return {fps, durations, beginFrame, addFrameEvent, endFrame};
 		}
 
 		useStats_s(useStats, "OYaQh1/wbO0sY6LqQebi+5QHbjI=");
@@ -2191,19 +2185,15 @@
 			const [pipeline, setPipeline] = Object(react["useState"])(null);
 			const backgroundImageRef = Object(react["useRef"])(null);
 			const canvasRef = Object(react["useRef"])(null);
-			const {
-				fps,
-				durations,
-				beginFrame,
-				addFrameEvent,
-				endFrame
-			} = hooks_useStats();
+			const {fps, durations, beginFrame, addFrameEvent, endFrame} = hooks_useStats();
 			Object(react["useEffect"])(() => {
 				// The useEffect cleanup function is not enough to stop
 				// the rendering loop when the framerate is low
 				let shouldRender = true;
 				let renderRequestId;
-				const newPipeline = segmentationConfig.pipeline === 'webgl2' ? buildWebGL2Pipeline(sourcePlayback, backgroundImageRef.current, backgroundConfig, segmentationConfig, canvasRef.current, tflite, addFrameEvent) : buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef.current, bodyPix, tflite, addFrameEvent);
+				const newPipeline = segmentationConfig.pipeline === 'webgl2'
+					? buildWebGL2Pipeline(sourcePlayback, backgroundImageRef.current, backgroundConfig, segmentationConfig, canvasRef.current, tflite, addFrameEvent)
+					: buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef.current, bodyPix, tflite, addFrameEvent);
 
 				async function render() {
 					if (!shouldRender) {
@@ -2227,21 +2217,15 @@
 					setPipeline(null);
 				};
 			}, [sourcePlayback, backgroundConfig, segmentationConfig, bodyPix, tflite, setPipeline, beginFrame, addFrameEvent, endFrame]);
-			return {
-				pipeline,
-				backgroundImageRef,
-				canvasRef,
-				fps,
-				durations
-			};
+			return {pipeline, backgroundImageRef, canvasRef, fps, durations};
 		}
 
-		useRenderingPipeline_s(useRenderingPipeline, "/6zN20EQjTLikNsfqNNksv5KS4c=", false, function () {
-			return [hooks_useStats];
-		});
+		// useRenderingPipeline_s(useRenderingPipeline, "/6zN20EQjTLikNsfqNNksv5KS4c=", false, function () {
+		// 	return [hooks_useStats];
+		// });
 
 		/* harmony default export */
-		var hooks_useRenderingPipeline = (useRenderingPipeline);
+		var hooks_useRenderingPipeline = useRenderingPipeline;
 // CONCATENATED MODULE: ./src/core/components/OutputViewer.tsx
 		var OutputViewer_jsxFileName = "D:\\github_learning\\virtual-background-demo-test\\src\\core\\components\\OutputViewer.tsx",
 			OutputViewer_s = createSignatureFunctionForTransform();
@@ -2592,17 +2576,19 @@
 // CONCATENATED MODULE: ./src/core/hooks/useBodyPix.ts
 		var useBodyPix_s = createSignatureFunctionForTransform();
 
-
 		function useBodyPix() {
 			useBodyPix_s();
 
 			const [bodyPix, setBodyPix] = Object(react["useState"])();
 			Object(react["useEffect"])(() => {
 				async function loadBodyPix() {
+					// 初始化准备
 					console.log('Loading TensorFlow.js and BodyPix segmentation model');
-					await dist["a" /* ready */]();
+					await dist["a" /* ready */]();   // function ready() {return _engine__WEBPACK_IMPORTED_MODULE_0__[/* ENGINE */ "a"].ready();}
+					// load 加载
 					setBodyPix(await body_pix_esm["a" /* load */]());
-					console.log('TensorFlow.js and BodyPix loaded');
+					console.warn('TensorFlow.js and BodyPix loaded');
+					// debugger
 				}
 
 				loadBodyPix();
