@@ -9,13 +9,7 @@ import {SourcePlayback} from '../helpers/sourceHelper'
 import useStats from './useStats'
 import {TFLite} from './useTFLite'
 
-function useRenderingPipeline(
-    sourcePlayback: SourcePlayback,
-    backgroundConfig: BackgroundConfig,
-    segmentationConfig: SegmentationConfig,
-    bodyPix: BodyPix,
-    tflite: TFLite
-) {
+function useRenderingPipeline(sourcePlayback: SourcePlayback, backgroundConfig: BackgroundConfig, segmentationConfig: SegmentationConfig, bodyPix: BodyPix, tflite: TFLite) {
     const [pipeline, setPipeline] = useState<RenderingPipeline | null>(null)
     const backgroundImageRef = useRef<HTMLImageElement>(null)
     const canvasRef = useRef<HTMLCanvasElement>(null!)
