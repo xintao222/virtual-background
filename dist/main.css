@@ -1,0 +1,92 @@
+body {
+    display: block;
+    margin: 8px;
+}
+
+.makeStyles-root-3 {
+    grid-column-end: 3;
+    grid-column-start: 1;
+}
+
+.makeStyles-root-1 {
+    display: grid;
+}
+
+@media (min-width: 0px){
+    .makeStyles-root-1 {
+        gap: 8px;
+        margin: 8px;
+        grid-template-columns: 1fr;
+    }
+}
+
+.makeStyles-root-3 {
+    display: flex;
+    overflow: hidden;
+    min-height: calc(min(416px, 100vh - 16px));
+}
+.MuiPaper-elevation1 {
+    box-shadow: 0px 2px 1px -1px rgb(0 0 0 / 20%), 0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%);
+}
+.MuiPaper-rounded {
+    border-radius: 4px;
+}
+.MuiPaper-root {
+    color: rgba(0, 0, 0, 0.87);
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    background-color: #fff;
+}
+.makeStyles-root-6 {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    max-width: 620px;
+}
+
+@media (min-width: 600px){
+    .makeStyles-root-6 {
+        flex: 1;
+        border-right-color: rgba(0, 0, 0, 0.12);
+        border-right-style: solid;
+        border-right-width: 1px;
+    }
+}
+
+.makeStyles-sourcePlayback-7 {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    object-fit: cover;
+}
+
+.makeStyles-root-8 {
+    flex: 1;
+    position: relative;
+    max-width: 620px;
+}
+.makeStyles-render-9 {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    object-fit: cover;
+}
+.makeStyles-stats-10 {
+    top: 0;
+    left: 0;
+    color: #fff;
+    right: 0;
+    position: absolute;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.48);
+}
+.MuiTypography-caption {
+    font-size: 0.75rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.66;
+    letter-spacing: 0.03333em;
+}
+.MuiTypography-root {
+    margin: 0;
+}

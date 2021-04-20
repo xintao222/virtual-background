@@ -7,9 +7,6 @@
 // ESM COMPAT FLAG
 		__webpack_require__.r(__webpack_exports__);
 
-// // EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/CssBaseline/CssBaseline.js
-// 		var CssBaseline = __webpack_require__(383);
-
 // EXTERNAL MODULE: ./node_modules/react/index.js
 		var react = __webpack_require__(5);
 		var react_default = /*#__PURE__*/__webpack_require__.n(react);
@@ -24,63 +21,14 @@
 // EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/styles/createStyles.js + 1 modules
 		var createStyles = __webpack_require__(389);
 
-// EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/Card/Card.js
-		var Card = __webpack_require__(378);
-
 // EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/CardContent/CardContent.js
 		var CardContent = __webpack_require__(379);
 
 // EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/Typography/Typography.js
 		var Typography = __webpack_require__(337);
 
-// EXTERNAL MODULE: ./node_modules/@material-ui/icons/Block.js
-		var Block = __webpack_require__(268);
-		var Block_default = /*#__PURE__*/__webpack_require__.n(Block);
-
-// EXTERNAL MODULE: ./node_modules/@material-ui/icons/BlurOn.js
-		var BlurOn = __webpack_require__(269);
-		var BlurOn_default = /*#__PURE__*/__webpack_require__.n(BlurOn);
-
-// EXTERNAL MODULE: ./node_modules/@material-ui/lab/esm/Skeleton/Skeleton.js
-		var Skeleton = __webpack_require__(377);
-
-// EXTERNAL MODULE: ./node_modules/clsx/dist/clsx.m.js
-		var clsx_m = __webpack_require__(17);
-
-// EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/Button/Button.js
-		var Button = __webpack_require__(371);
-
 // EXTERNAL MODULE: ./node_modules/react/jsx-dev-runtime.js
 		var jsx_dev_runtime = __webpack_require__(14);
-// EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/FormControl/FormControl.js
-		var FormControl = __webpack_require__(380);
-
-// EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/FormControlLabel/FormControlLabel.js
-		var FormControlLabel = __webpack_require__(381);
-
-// EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/InputLabel/InputLabel.js + 1 modules
-		var InputLabel = __webpack_require__(388);
-
-// EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/MenuItem/MenuItem.js + 1 modules
-		var MenuItem = __webpack_require__(390);
-
-// EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/Select/Select.js + 28 modules
-		var Select = __webpack_require__(384);
-
-// EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/Slider/Slider.js + 1 modules
-		var Slider = __webpack_require__(387);
-
-// EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/Switch/Switch.js + 2 modules
-		var Switch = __webpack_require__(385);
-
-		// register(SegmentationConfigCard_c, "SegmentationConfigCard");
-// EXTERNAL MODULE: ./node_modules/@material-ui/icons/Videocam.js
-		var Videocam = __webpack_require__(271);
-		var Videocam_default = /*#__PURE__*/__webpack_require__.n(Videocam);
-
-// EXTERNAL MODULE: ./node_modules/@material-ui/icons/PlayCircleOutline.js
-		var PlayCircleOutline = __webpack_require__(270);
-		var PlayCircleOutline_default = /*#__PURE__*/__webpack_require__.n(PlayCircleOutline);
 
 // EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/Avatar/Avatar.js + 1 modules
 		var Avatar = __webpack_require__(386);
@@ -88,6 +36,11 @@
 // EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/Paper/Paper.js
 		var Paper = __webpack_require__(336);
 
+// EXTERNAL MODULE: ./node_modules/@tensorflow-models/body-pix/dist/body-pix.esm.js
+		var body_pix_esm = __webpack_require__(273);
+
+// EXTERNAL MODULE: ./node_modules/@tensorflow/tfjs/dist/index.js + 514 modules
+		var dist = __webpack_require__(293);
 
 // CONCATENATED MODULE: ./src/core/hooks/useStats.ts
 		function useStats() {
@@ -141,6 +94,7 @@
 					model: "meet",
 					pipeline: "canvas2dCpu",
 				}
+				console.warn('segmentationConfig: ', JSON.stringify(segmentationConfig, null, '    '))
 
 				// todo: chrou add
 				console.warn("这里需要手动显示下背景")
@@ -152,7 +106,7 @@
 				let shouldRender = true;
 				let renderRequestId;
 				const newPipeline = buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef.current, bodyPix, tflite, addFrameEvent);
-				backgroundConfig.url = "/public/backgrounds/sea.jpg"
+				backgroundConfig.url = "/public/backgrounds/architecture-5082700_1280.jpg"
 
 				async function render() {
 					if (!shouldRender) {
@@ -184,7 +138,7 @@
 // CONCATENATED MODULE: ./src/core/components/OutputViewer.tsx
 		var OutputViewer_jsxFileName = "D:\\github_learning\\virtual-background-demo-test\\src\\core\\components\\OutputViewer.tsx"
 		function OutputViewer(props) {
-			const classes = OutputViewer_useStyles();
+			// console.warn("OutputViewer props: ", props)
 			const {
 				pipeline,
 				backgroundImageRef,
@@ -198,20 +152,15 @@
 				props.bodyPix,
 				props.tflite
 			);
-			Object(react["useEffect"])(() => {
-				if (pipeline) {
-					pipeline.updatePostProcessingConfig(props.postProcessingConfig);
-				}
-			}, [pipeline, props.postProcessingConfig]);
 
 			const statDetails = [`resizing ${resizingDuration}ms`, `inference ${inferenceDuration}ms`, `post-processing ${postProcessingDuration}ms`];
 			const stats = `${Math.round(fps)} fps (${statDetails.join(', ')})`;
 
 			return /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("div", {
-				className: classes.root,
-				children: [props.backgroundConfig.type === 'image' && /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("img", {
+				className: 'makeStyles-root-8',
+				children: [props.backgroundConfig.type === 'image' && /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("img", {  // 源文件图片
 					ref: backgroundImageRef,
-					className: classes.render,
+					className: 'makeStyles-render-9',
 					src: props.backgroundConfig.url,
 					alt: "",
 					// todo: 这里设置背景隐藏后背景无法看到
@@ -220,17 +169,17 @@
 					fileName: OutputViewer_jsxFileName,
 					lineNumber: 53,
 					columnNumber: 9
-				}, this), /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("canvas", {
+				}, this), /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("canvas", {   // 转换后的canvas
 					ref: canvasRef,
-					className: classes.render,
+					className: 'makeStyles-render-9',
 					width: props.sourcePlayback.width,
 					height: props.sourcePlayback.height
 				}, props.segmentationConfig.pipeline, false, {
 					fileName: OutputViewer_jsxFileName,
 					lineNumber: 61,
 					columnNumber: 7
-				}, this), /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])(Typography["a" /* default */], {
-					className: classes.stats,
+				}, this), /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])(Typography["a" /* default */], {   // fps
+					className: 'makeStyles-stats-10',
 					variant: "caption",
 					children: stats
 				}, void 0, false, {
@@ -244,41 +193,10 @@
 				columnNumber: 5
 			}, this);
 		}
-		// OutputViewer_c = OutputViewer;
-
-
-		const OutputViewer_useStyles = Object(makeStyles["a" /* default */])(theme => Object(createStyles["a" /* default */])({
-			root: {
-				flex: 1,
-				position: 'relative'
-			},
-			render: {
-				position: 'absolute',
-				width: '100%',
-				height: '100%',
-				objectFit: 'cover'
-			},
-			stats: {
-				position: 'absolute',
-				top: 0,
-				right: 0,
-				left: 0,
-				textAlign: 'center',
-				backgroundColor: 'rgba(0, 0, 0, 0.48)',
-				color: theme.palette.common.white
-			}
-		}));
-// EXTERNAL MODULE: ./node_modules/@material-ui/core/esm/CircularProgress/CircularProgress.js
-		var CircularProgress = __webpack_require__(382);
-
-// EXTERNAL MODULE: ./node_modules/@material-ui/icons/VideocamOff.js
-		var VideocamOff = __webpack_require__(272);
-		var VideocamOff_default = /*#__PURE__*/__webpack_require__.n(VideocamOff);
 
 // CONCATENATED MODULE: ./src/core/components/SourceViewer.tsx
 		var SourceViewer_jsxFileName = "D:\\github_learning\\virtual-background-demo-test\\src\\core\\components\\SourceViewer.tsx"
 		function SourceViewer(props) {
-			const classes = SourceViewer_useStyles();
 			const [sourceUrl, setSourceUrl] = Object(react["useState"])();
 			const [isLoading, setLoading] = Object(react["useState"])(false);
 			const [isCameraError, setCameraError] = Object(react["useState"])(false);
@@ -340,44 +258,19 @@
 			}
 
 			return /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("div", {
-				className: classes.root,
-				children: [isLoading && /*#__PURE__*/
-				Object(jsx_dev_runtime["jsxDEV"])(CircularProgress["a" /* default */], {}, void 0, false, {
-					fileName: SourceViewer_jsxFileName,
-					lineNumber: 75,
-					columnNumber: 21
-				}, this), props.sourceConfig.type === 'image' ? /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("img", {
-					className: classes.sourcePlayback,
-					src: sourceUrl,
-					hidden: isLoading,
-					alt: "",
-					onLoad: handleImageLoad
-				}, void 0, false, {
-					fileName: SourceViewer_jsxFileName,
-					lineNumber: 77,
-					columnNumber: 9
-				}, this) : isCameraError ? /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])(VideocamOff_default.a, {
-					fontSize: "large"
-				}, void 0, false, {
-					fileName: SourceViewer_jsxFileName,
-					lineNumber: 85,
-					columnNumber: 9
-				}, this) : /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("video", {
-					ref: videoRef,
-					className: classes.sourcePlayback,
-					src: sourceUrl,
-					hidden: isLoading,
-					autoPlay: true,
-					playsInline: true,
-					controls: false,
-					muted: true,
-					loop: true,
-					onLoadedData: handleVideoLoad
-				}, void 0, false, {
-					fileName: SourceViewer_jsxFileName,
-					lineNumber: 87,
-					columnNumber: 9
-				}, this)]
+				className: 'makeStyles-root-6',
+				children: [/*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("img", {
+						className: 'makeStyles-sourcePlayback-7',
+						src: sourceUrl,
+						hidden: isLoading,
+						alt: "",
+						onLoad: handleImageLoad
+					}, void 0, false, {
+						fileName: SourceViewer_jsxFileName,
+						lineNumber: 77,
+						columnNumber: 9
+					}, this)
+				]
 			}, void 0, true, {
 				fileName: SourceViewer_jsxFileName,
 				lineNumber: 74,
@@ -385,41 +278,16 @@
 			}, this);
 		}
 
-		const SourceViewer_useStyles = Object(makeStyles["a" /* default */])(theme => Object(createStyles["a" /* default */])({
-			root: {
-				position: 'relative',
-				display: 'flex',
-				justifyContent: 'center',
-				alignItems: 'center',
-				[theme.breakpoints.down('xs')]: {
-					width: 0,
-					overflow: 'hidden'
-				},
-				[theme.breakpoints.up('sm')]: {
-					flex: 1,
-					borderRightWidth: 1,
-					borderRightStyle: 'solid',
-					borderRightColor: theme.palette.divider
-				}
-			},
-			sourcePlayback: {
-				position: 'absolute',
-				width: '100%',
-				height: '100%',
-				objectFit: 'cover'
-			}
-		}));
 
 // CONCATENATED MODULE: ./src/core/components/ViewerCard.tsx
 		var ViewerCard_jsxFileName = "D:\\github_learning\\virtual-background-demo-test\\src\\core\\components\\ViewerCard.tsx";
 		function ViewerCard(props) {
-			const classes = ViewerCard_useStyles();
 			const [sourcePlayback, setSourcePlayback] = Object(react["useState"])();
 			Object(react["useEffect"])(() => {
 				setSourcePlayback(undefined);
 			}, [props.sourceConfig]);
 			return /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])(Paper["a" /* default */], {
-				className: classes.root,
+				className: 'makeStyles-root-3',
 				children: [/*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])(SourceViewer, {
 					sourceConfig: props.sourceConfig,
 					onLoad: setSourcePlayback
@@ -439,9 +307,9 @@
 					lineNumber: 38,
 					columnNumber: 9
 				}, this) : /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("div", {
-					className: classes.noOutput,
+					className: 'makeStyles-noOutput-4',
 					children: /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])(Avatar["a" /* default */], {
-						className: classes.avatar
+						className: 'makeStyles-avatar-5'
 					}, void 0, false, {
 						fileName: ViewerCard_jsxFileName,
 						lineNumber: 48,
@@ -459,75 +327,20 @@
 			}, this);
 		}
 
-		ViewerCard_c = ViewerCard;
-		const ViewerCard_useStyles = Object(makeStyles["a" /* default */])(theme => {
-			const minHeight = [`${theme.spacing(52)}px`, `100vh - ${theme.spacing(2)}px`];
-			return Object(createStyles["a" /* default */])({
-				root: {
-					minHeight: `calc(min(${minHeight.join(', ')}))`,
-					display: 'flex',
-					overflow: 'hidden',
-					[theme.breakpoints.up('md')]: {
-						gridColumnStart: 1,
-						gridColumnEnd: 3
-					},
-					[theme.breakpoints.up('lg')]: {
-						gridRowStart: 1,
-						gridRowEnd: 3
-					}
-				},
-				noOutput: {
-					flex: 1,
-					display: 'flex',
-					justifyContent: 'center',
-					alignItems: 'center'
-				},
-				avatar: {
-					width: theme.spacing(20),
-					height: theme.spacing(20)
-				}
-			});
-		});
-		/* harmony default export */
-		var components_ViewerCard = (ViewerCard);
-
-		var ViewerCard_c;
-
-		// register(ViewerCard_c, "ViewerCard");
-// EXTERNAL MODULE: ./node_modules/@tensorflow-models/body-pix/dist/body-pix.esm.js
-		var body_pix_esm = __webpack_require__(273);
-
-// EXTERNAL MODULE: ./node_modules/@tensorflow/tfjs/dist/index.js + 514 modules
-		var dist = __webpack_require__(293);
-
 // CONCATENATED MODULE: ./src/core/hooks/useBodyPix.ts
-		function useBodyPix() {
-			const [bodyPix, setBodyPix] = Object(react["useState"])();
-			Object(react["useEffect"])(() => {
-				async function loadBodyPix() {
-					// 初始化准备
-					console.log('Loading TensorFlow.js and BodyPix segmentation model');
-					await dist["a" /* ready */]();   // function ready() {return _engine__WEBPACK_IMPORTED_MODULE_0__[/* ENGINE */ "a"].ready();}
-					// load 加载
-					setBodyPix(await body_pix_esm["a" /* load */]());
-					console.warn('TensorFlow.js and BodyPix loaded');
-					// debugger
-				}
-
-				loadBodyPix();
-			}, []);
-			return bodyPix;
+		async function useBodyPix() {
+			// let bodyPix = null
+			// console.log('Loading TensorFlow.js and BodyPix segmentation model');
+			// await dist["a" /* ready */]();   // function ready() {return _engine__WEBPACK_IMPORTED_MODULE_0__[/* ENGINE */ "a"].ready();}
+			// // load 加载
+			// await body_pix_esm["a" /* load */]()
+			// console.warn('TensorFlow.js and BodyPix loaded');
+			return null;
 		}
 
-		// useBodyPix_s(useBodyPix, "GbEnrZKCrcdijtZsXRLRLzSRhDo=");
-
-		/* harmony default export */
-		var hooks_useBodyPix = (useBodyPix);
 // CONCATENATED MODULE: ./src/core/hooks/useTFLite.ts
 		function useTFLite(segmentationConfig) {
 			const [tflite, setTFLite] = Object(react["useState"])();
-			console.warn("tflite: ", tflite)
-			console.warn("setTFLite: ", setTFLite)
 			const [tfliteSIMD, setTFLiteSIMD] = Object(react["useState"])();
 			const [selectedTFLite, setSelectedTFLite] = Object(react["useState"])();
 			const [isSIMDSupported, setSIMDSupported] = Object(react["useState"])(false);
@@ -535,13 +348,13 @@
 				async function loadTFLite() {
 					createTFLiteModule().then(setTFLite);
 
-					try {
-						const createdTFLiteSIMD = await createTFLiteSIMDModule();
-						setTFLiteSIMD(createdTFLiteSIMD);
-						setSIMDSupported(true);
-					} catch (error) {
-						console.warn('Failed to create TFLite SIMD WebAssembly module.', error);
-					}
+					// try {
+					// 	const createdTFLiteSIMD = await createTFLiteSIMDModule();
+					// 	setTFLiteSIMD(createdTFLiteSIMD);
+					// 	setSIMDSupported(true);
+					// } catch (error) {
+					// 	console.error('Failed to create TFLite SIMD WebAssembly module.', error);
+					// }
 				}
 
 				loadTFLite();
@@ -554,7 +367,6 @@
 
 					setSelectedTFLite(undefined);
 					const newSelectedTFLite = segmentationConfig.backend === 'wasmSimd' ? tfliteSIMD : tflite;
-
 					if (!newSelectedTFLite) {
 						throw new Error(`TFLite backend unavailable: ${segmentationConfig.backend}`);
 					}
@@ -566,7 +378,6 @@
 					console.log('Model buffer size:', model.byteLength);
 
 					const modelBufferOffset = newSelectedTFLite._getModelBufferMemoryOffset();
-
 					console.log('Model buffer memory offset:', modelBufferOffset);
 					console.log('Loading model buffer...');
 					newSelectedTFLite.HEAPU8.set(new Uint8Array(model), modelBufferOffset);
@@ -579,21 +390,16 @@
 					console.log('Output height:', newSelectedTFLite._getOutputHeight());
 					console.log('Output width:', newSelectedTFLite._getOutputWidth());
 					console.log('Output channels:', newSelectedTFLite._getOutputChannelCount());
-					console.warn("setSelectedTFLite: ", setSelectedTFLite)
 					setSelectedTFLite(newSelectedTFLite);
 				}
 
 				loadMeetModel();
 			}, [tflite, tfliteSIMD, isSIMDSupported, segmentationConfig.model, segmentationConfig.backend, segmentationConfig.inputResolution]);
-			return {
-				tflite: selectedTFLite,
-				isSIMDSupported
-			};
+			return {tflite: selectedTFLite, isSIMDSupported};
 		}
 
 // CONCATENATED MODULE: ./src/App.tsx
 		function App() {
-			const classes = App_useStyles();
 			const [sourceConfig, setSourceConfig] = Object(react["useState"])({
 				type: 'image',
 				url: '/public/images/girl-919048_1280.jpg'
@@ -610,20 +416,17 @@
 			});
 			const [postProcessingConfig, setPostProcessingConfig] = Object(react["useState"])({
 				smoothSegmentationMask: true,
-				jointBilateralFilter: {
-					sigmaSpace: 1,
-					sigmaColor: 0.1
-				},
+				jointBilateralFilter: {sigmaSpace: 1, sigmaColor: 0.1},
 				coverage: [0.5, 0.75],
 				lightWrapping: 0.3,
 				blendMode: 'screen'
 			});
-			const bodyPix = hooks_useBodyPix();
+			const bodyPix = useBodyPix();
 			const {tflite, isSIMDSupported} = useTFLite(segmentationConfig);
 
 			return /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("div", {
-				className: classes.root,
-				children: [/*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])(components_ViewerCard, {
+				className: 'makeStyles-root-1',
+				children: [/*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])(ViewerCard, {
 					sourceConfig: sourceConfig,
 					backgroundConfig: backgroundConfig,
 					segmentationConfig: segmentationConfig,
@@ -642,30 +445,6 @@
 			}, this);
 		}
 
-		const App_useStyles = Object(makeStyles["a" /* default */])(theme => Object(createStyles["a" /* default */])({
-			root: {
-				display: 'grid',
-				[theme.breakpoints.up('xs')]: {
-					margin: theme.spacing(1),
-					gap: theme.spacing(1),
-					gridTemplateColumns: '1fr'
-				},
-				[theme.breakpoints.up('md')]: {
-					margin: theme.spacing(2),
-					gap: theme.spacing(2),
-					gridTemplateColumns: 'repeat(2, 1fr)'
-				},
-				[theme.breakpoints.up('lg')]: {
-					gridTemplateColumns: 'repeat(3, 1fr)'
-				}
-			},
-			resourceSelectionCards: {
-				display: 'flex',
-				flexDirection: 'column'
-			}
-		}));
-
-
 // CONCATENATED MODULE: ./src/index.tsx
 		var src_jsxFileName = 'null';
 		react_dom_default.a.render( /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])(react_default.a.StrictMode,
@@ -682,6 +461,7 @@
 			lineNumber: 8,
 			columnNumber: 3
 		}, undefined), document.getElementById('root')); // If you want to start measuring performance in your app, pass a function
+
 	})
 
 }, [[332, 1, 2]]]);

@@ -17,8 +17,6 @@ function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationCon
 	const segmentationMaskCtx = segmentationMaskCanvas.getContext('2d');
 	const inputMemoryOffset = tflite._getInputMemoryOffset() / 4;
 	const outputMemoryOffset = tflite._getOutputMemoryOffset() / 4;
-	console.warn("inputMemoryOffset: ", inputMemoryOffset)
-	console.warn("outputMemoryOffset: ", outputMemoryOffset)
 	let postProcessingConfig;
 
 	async function render() {
@@ -26,7 +24,7 @@ function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationCon
 			resizeSource();
 		}
 
-		addFrameEvent();
+		// addFrameEvent();
 
 		if (backgroundConfig.type !== 'none') {
 			if (segmentationConfig.model === 'bodyPix') {
@@ -36,7 +34,7 @@ function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationCon
 			}
 		}
 
-		addFrameEvent();
+		// addFrameEvent();
 		runPostProcessing();
 	}
 
