@@ -96,17 +96,11 @@
 				}
 				console.warn('segmentationConfig: ', JSON.stringify(segmentationConfig, null, '    '))
 
-				// todo: chrou add
-				console.warn("这里需要手动显示下背景")
-				if(document.querySelectorAll('img')[1]){
-					document.querySelectorAll('img')[1].hidden = false
-				}
 				// The useEffect cleanup function is not enough to stop
 				// the rendering loop when the framerate is low
 				let shouldRender = true;
 				let renderRequestId;
 				const newPipeline = buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef.current, bodyPix, tflite, addFrameEvent);
-				backgroundConfig.url = "/public/backgrounds/architecture-5082700_1280.jpg"
 
 				async function render() {
 					if (!shouldRender) {
@@ -130,7 +124,7 @@
 					console.warn('Animation stopped:', sourcePlayback, backgroundConfig, segmentationConfig);
 					setPipeline(null);
 				};
-			}, [sourcePlayback, backgroundConfig, segmentationConfig, bodyPix, tflite, setPipeline, beginFrame, addFrameEvent, endFrame]);
+			}, []);
 			return {pipeline, backgroundImageRef, canvasRef, fps, durations};
 		}
 
@@ -138,20 +132,13 @@
 // CONCATENATED MODULE: ./src/core/components/OutputViewer.tsx
 		var OutputViewer_jsxFileName = "D:\\github_learning\\virtual-background-demo-test\\src\\core\\components\\OutputViewer.tsx"
 		function OutputViewer(props) {
-			// console.warn("OutputViewer props: ", props)
 			const {
 				pipeline,
 				backgroundImageRef,
 				canvasRef,
 				fps,
 				durations: [resizingDuration, inferenceDuration, postProcessingDuration]
-			} = useRenderingPipeline(
-				props.sourcePlayback,
-				props.backgroundConfig,
-				props.segmentationConfig,
-				props.bodyPix,
-				props.tflite
-			);
+			} = useRenderingPipeline(props.sourcePlayback, props.backgroundConfig, props.segmentationConfig, props.bodyPix, props.tflite);
 
 			const statDetails = [`resizing ${resizingDuration}ms`, `inference ${inferenceDuration}ms`, `post-processing ${postProcessingDuration}ms`];
 			const stats = `${Math.round(fps)} fps (${statDetails.join(', ')})`;
@@ -164,7 +151,7 @@
 					src: props.backgroundConfig.url,
 					alt: "",
 					// todo: 这里设置背景隐藏后背景无法看到
-					hidden: props.segmentationConfig.pipeline === 'webgl2'
+					hidden: ''
 				}, void 0, false, {
 					fileName: OutputViewer_jsxFileName,
 					lineNumber: 53,
@@ -229,6 +216,7 @@
 					setLoading(false);
 					setCameraError(true);
 				}
+				console.warn(props)
 
 				if (props.sourceConfig.type === 'camera') {
 					getCameraStream();
@@ -259,15 +247,21 @@
 
 			return /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("div", {
 				className: 'makeStyles-root-6',
-				children: [/*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("img", {
+				children: [
+					/*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("video", {
+						ref: videoRef,
 						className: 'makeStyles-sourcePlayback-7',
 						src: sourceUrl,
 						hidden: isLoading,
-						alt: "",
-						onLoad: handleImageLoad
+						autoPlay: true,
+						playsInline: true,
+						controls: false,
+						muted: true,
+						loop: true,
+						onLoadedData: handleVideoLoad
 					}, void 0, false, {
 						fileName: SourceViewer_jsxFileName,
-						lineNumber: 77,
+						lineNumber: 87,
 						columnNumber: 9
 					}, this)
 				]
@@ -327,17 +321,6 @@
 			}, this);
 		}
 
-// CONCATENATED MODULE: ./src/core/hooks/useBodyPix.ts
-		async function useBodyPix() {
-			// let bodyPix = null
-			// console.log('Loading TensorFlow.js and BodyPix segmentation model');
-			// await dist["a" /* ready */]();   // function ready() {return _engine__WEBPACK_IMPORTED_MODULE_0__[/* ENGINE */ "a"].ready();}
-			// // load 加载
-			// await body_pix_esm["a" /* load */]()
-			// console.warn('TensorFlow.js and BodyPix loaded');
-			return null;
-		}
-
 // CONCATENATED MODULE: ./src/core/hooks/useTFLite.ts
 		function useTFLite(segmentationConfig) {
 			const [tflite, setTFLite] = Object(react["useState"])();
@@ -347,14 +330,6 @@
 			Object(react["useEffect"])(() => {
 				async function loadTFLite() {
 					createTFLiteModule().then(setTFLite);
-
-					// try {
-					// 	const createdTFLiteSIMD = await createTFLiteSIMDModule();
-					// 	setTFLiteSIMD(createdTFLiteSIMD);
-					// 	setSIMDSupported(true);
-					// } catch (error) {
-					// 	console.error('Failed to create TFLite SIMD WebAssembly module.', error);
-					// }
 				}
 
 				loadTFLite();
@@ -381,6 +356,7 @@
 					console.log('Model buffer memory offset:', modelBufferOffset);
 					console.log('Loading model buffer...');
 					newSelectedTFLite.HEAPU8.set(new Uint8Array(model), modelBufferOffset);
+
 					console.log('_loadModel result:', newSelectedTFLite._loadModel(model.byteLength));
 					console.log('Input memory offset:', newSelectedTFLite._getInputMemoryOffset());
 					console.log('Input height:', newSelectedTFLite._getInputHeight());
@@ -398,15 +374,20 @@
 			return {tflite: selectedTFLite, isSIMDSupported};
 		}
 
+// CONCATENATED MODULE: ./src/core/hooks/useBodyPix.ts
+		async function useBodyPix() {
+			return null;
+		}
+
 // CONCATENATED MODULE: ./src/App.tsx
 		function App() {
 			const [sourceConfig, setSourceConfig] = Object(react["useState"])({
-				type: 'image',
-				url: '/public/images/girl-919048_1280.jpg'
+				type: 'camera',
+				url: '',
 			});
 			const [backgroundConfig, setBackgroundConfig] = Object(react["useState"])({
 				type: 'image',
-				url: null
+				url: "/public/backgrounds/architecture-5082700_1280.jpg"
 			});
 			const [segmentationConfig, setSegmentationConfig] = Object(react["useState"])({
 				model: 'meet',

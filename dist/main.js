@@ -24,7 +24,7 @@ function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationCon
 			resizeSource();
 		}
 
-		// addFrameEvent();
+		addFrameEvent();
 
 		if (backgroundConfig.type !== 'none') {
 			if (segmentationConfig.model === 'bodyPix') {
@@ -34,7 +34,7 @@ function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationCon
 			}
 		}
 
-		// addFrameEvent();
+		addFrameEvent();
 		runPostProcessing();
 	}
 
