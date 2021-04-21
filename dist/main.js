@@ -6,7 +6,7 @@ const inputResolutions = {
 };
 
 // CONCATENATED MODULE: ./src/pipelines/canvas2d/canvas2dPipeline.ts
-function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvas, bodyPix, tflite, addFrameEvent) {
+function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvas, tflite, addFrameEvent) {
 	const ctx = canvas.getContext('2d');
 	const [segmentationWidth, segmentationHeight] = inputResolutions[segmentationConfig.inputResolution];
 	const segmentationPixelCount = segmentationWidth * segmentationHeight;
@@ -22,19 +22,14 @@ function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationCon
 	async function render() {
 		if (backgroundConfig.type !== 'none') {
 			resizeSource();
-		}
 
-		addFrameEvent();
+		}
+		addFrameEvent && addFrameEvent();
 
 		if (backgroundConfig.type !== 'none') {
-			if (segmentationConfig.model === 'bodyPix') {
-				await runBodyPixInference();
-			} else {
-				runTFLiteInference();
-			}
+			runTFLiteInference();
 		}
-
-		addFrameEvent();
+		addFrameEvent && addFrameEvent();
 		runPostProcessing();
 	}
 
@@ -57,17 +52,6 @@ function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationCon
 				tflite.HEAPF32[inputMemoryOffset + i * 3 + 2] = imageData.data[i * 4 + 2] / 255;
 			}
 		}
-	}
-
-	async function runBodyPixInference() {
-		const segmentation = await bodyPix.segmentPerson(segmentationMaskCanvas);
-
-		for (let i = 0; i < segmentationPixelCount; i++) {
-			// Sets only the alpha component of each pixel
-			segmentationMask.data[i * 4 + 3] = segmentation.data[i] ? 255 : 0;
-		}
-
-		segmentationMaskCtx.putImageData(segmentationMask, 0, 0);
 	}
 
 	function runTFLiteInference() {
@@ -133,15 +117,6 @@ function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationCon
 
 
 // CONCATENATED MODULE: ./src/pipelines/helpers/webglHelper.ts
-/**
- * Use it along with boyswan.glsl-literal VSCode extension
- * to get GLSL syntax highlighting.
- * https://marketplace.visualstudio.com/items?itemName=boyswan.glsl-literal
- *
- * On VSCode OSS, boyswan.glsl-literal requires slevesque.shader extension
- * to be installed as well.
- * https://marketplace.visualstudio.com/items?itemName=slevesque.shader
- */
 const glsl = String.raw;
 
 function createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer) {
@@ -238,7 +213,6 @@ function clientWaitAsync(gl, sync) {
 		requestAnimationFrame(test);
 	});
 }
-
 
 // CONCATENATED MODULE: ./src/pipelines/webgl2/backgroundBlurStage.ts
 function buildBackgroundBlurStage(gl, positionBuffer, texCoordBuffer, personMaskTexture, canvas) {

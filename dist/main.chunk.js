@@ -85,7 +85,7 @@
 			const [pipeline, setPipeline] = Object(react["useState"])(null);
 			const backgroundImageRef = Object(react["useRef"])(null);
 			const canvasRef = Object(react["useRef"])(null);
-			const {fps, durations, beginFrame, addFrameEvent, endFrame} = useStats();
+			let {fps, durations, beginFrame, addFrameEvent, endFrame} = useStats();
 
 			Object(react["useEffect"])(() => {
 				segmentationConfig = {
@@ -100,7 +100,8 @@
 				// the rendering loop when the framerate is low
 				let shouldRender = true;
 				let renderRequestId;
-				const newPipeline = buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef.current, bodyPix, tflite, addFrameEvent);
+				addFrameEvent = function (){}
+				const newPipeline = buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef.current, null, tflite, addFrameEvent);
 
 				async function render() {
 					if (!shouldRender) {
@@ -108,22 +109,22 @@
 					}
 
 					// todo: beginFrame、endFrame 用于显示处理后的video的fps
-					beginFrame();
+					// beginFrame();
 					await newPipeline.render();
-					endFrame();
+					// endFrame();
 					renderRequestId = requestAnimationFrame(render);
 				}
 
 				render();
 				console.warn('Animation started:', sourcePlayback, backgroundConfig, segmentationConfig);
 				setPipeline(newPipeline);
-				return () => {
-					shouldRender = false;
-					cancelAnimationFrame(renderRequestId);
-					newPipeline.cleanUp();
-					console.warn('Animation stopped:', sourcePlayback, backgroundConfig, segmentationConfig);
-					setPipeline(null);
-				};
+				// return () => {
+				// 	shouldRender = false;
+				// 	cancelAnimationFrame(renderRequestId);
+				// 	newPipeline.cleanUp();
+				// 	console.warn('Animation stopped:', sourcePlayback, backgroundConfig, segmentationConfig);
+				// 	setPipeline(null);
+				// };
 			}, []);
 			return {pipeline, backgroundImageRef, canvasRef, fps, durations};
 		}
@@ -140,9 +141,10 @@
 				durations: [resizingDuration, inferenceDuration, postProcessingDuration]
 			} = useRenderingPipeline(props.sourcePlayback, props.backgroundConfig, props.segmentationConfig, props.bodyPix, props.tflite);
 
-			const statDetails = [`resizing ${resizingDuration}ms`, `inference ${inferenceDuration}ms`, `post-processing ${postProcessingDuration}ms`];
-			const stats = `${Math.round(fps)} fps (${statDetails.join(', ')})`;
+			// const statDetails = [`resizing ${resizingDuration}ms`, `inference ${inferenceDuration}ms`, `post-processing ${postProcessingDuration}ms`];
+			// const stats = `${Math.round(fps)} fps (${statDetails.join(', ')})`;
 
+			console.warn("props.sourcePlayback: ", props.sourcePlayback)
 			return /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("div", {
 				className: 'makeStyles-root-8',
 				children: [props.backgroundConfig.type === 'image' && /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])("img", {  // 源文件图片
@@ -168,7 +170,7 @@
 				}, this), /*#__PURE__*/Object(jsx_dev_runtime["jsxDEV"])(Typography["a" /* default */], {   // fps
 					className: 'makeStyles-stats-10',
 					variant: "caption",
-					children: stats
+					children: ''
 				}, void 0, false, {
 					fileName: OutputViewer_jsxFileName,
 					lineNumber: 70,
