@@ -1,3 +1,33 @@
+// CONCATENATED MODULE: ./src/core/hooks/useTFLite.ts
+async function loadMeetModel(tflite, segmentationConfig){
+	const newSelectedTFLite = tflite
+	if (!newSelectedTFLite) {
+		throw new Error(`TFLite backend unavailable: ${segmentationConfig.backend}`);
+	}
+
+	const modelFileName = segmentationConfig.inputResolution === '144p' ? 'segm_full_v679' : 'segm_lite_v681';
+	const modelResponse = await fetch(`${"/public"}/models/${modelFileName}.tflite`);
+	console.warn("modelResponse: ", modelResponse)
+	const model = await modelResponse.arrayBuffer();
+	console.log('Model buffer size:', model.byteLength);
+
+	const modelBufferOffset = newSelectedTFLite._getModelBufferMemoryOffset();
+	console.log('Model buffer memory offset:', modelBufferOffset);
+	console.log('Loading model buffer...');
+	newSelectedTFLite.HEAPU8.set(new Uint8Array(model), modelBufferOffset);
+
+	console.log('_loadModel result:', newSelectedTFLite._loadModel(model.byteLength));
+	console.log('Input memory offset:', newSelectedTFLite._getInputMemoryOffset());
+	console.log('Input height:', newSelectedTFLite._getInputHeight());
+	console.log('Input width:', newSelectedTFLite._getInputWidth());
+	console.log('Input channels:', newSelectedTFLite._getInputChannelCount());
+	console.log('Output memory offset:', newSelectedTFLite._getOutputMemoryOffset());
+	console.log('Output height:', newSelectedTFLite._getOutputHeight());
+	console.log('Output width:', newSelectedTFLite._getOutputWidth());
+	console.log('Output channels:', newSelectedTFLite._getOutputChannelCount());
+}
+
+
 // CONCATENATED MODULE: ./src/core/helpers/segmentationHelper.ts
 const inputResolutions = {
 	'360p': [640, 360],
@@ -6,6 +36,18 @@ const inputResolutions = {
 };
 
 // CONCATENATED MODULE: ./src/pipelines/canvas2d/canvas2dPipeline.ts
+function useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, tflite){
+	let renderRequestId;
+	const newPipeline = buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef.current, tflite);
+	async function render() {
+		await newPipeline.render();
+		renderRequestId = requestAnimationFrame(render);
+	}
+
+	render();
+	console.warn('Animation started:', sourcePlayback, backgroundConfig, segmentationConfig);
+}
+
 function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvas, tflite, addFrameEvent) {
 	const ctx = canvas.getContext('2d');
 	const [segmentationWidth, segmentationHeight] = inputResolutions[segmentationConfig.inputResolution];

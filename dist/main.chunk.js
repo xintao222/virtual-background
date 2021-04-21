@@ -101,7 +101,7 @@
 				let shouldRender = true;
 				let renderRequestId;
 				addFrameEvent = function (){}
-				const newPipeline = buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef.current, null, tflite, addFrameEvent);
+				const newPipeline = buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef.current, tflite, addFrameEvent);
 
 				async function render() {
 					if (!shouldRender) {

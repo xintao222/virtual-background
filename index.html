@@ -4,14 +4,10 @@
     <meta charset="utf-8"/>
     <link rel="icon" href="#"/>
     <title>Virtual Background</title>
-    <link rel="stylesheet" href="dist/main.css">
-    <script src="public/tflite/tflite.js"></script>
-    <script src="public/tflite/tflite-simd.js"></script>
+    <link rel="stylesheet" href="main.css">
 </head>
 <body>
-
-<!--<div id="root"></div>-->
-
+<h1>Virtual Background test</h1>
 <div>
     <div class="makeStyles-root-1">
         <div class="MuiPaper-root makeStyles-root-3 MuiPaper-elevation1 MuiPaper-rounded">
@@ -27,14 +23,23 @@
     </div>
 </div>
 
+<script src="public/tflite/tflite.js"></script>
+<script src="public/tflite/tflite-simd.js"></script>
+<script src="public/src/pipelines.js"></script>
+<script src="index.js"></script>
 
-<!--修改打包文件后生成的文件-->
+
+
+<!--&lt;!&ndash;原本的处理&ndash;&gt;-->
+<!--<div id="root"></div>-->
+
+<!--&lt;!&ndash;&lt;!&ndash;修改打包文件后生成的文件&ndash;&gt;&ndash;&gt;-->
+<!--<script src="public/tflite/tflite.js"></script>-->
+<!--<script src="public/tflite/tflite-simd.js"></script>-->
 <!--<script src="dist/react-refresh-runtime.development.js"></script>-->
 <!--<script src="dist/runtime-main.js"></script>-->
 <!--<script src="dist/2.chunk.js"></script>-->
 <!--<script src="dist/main.chunk.js"></script>-->
-
-<script src="dist/main.js"></script>
-<script src="dist/index.js"></script>
+<!--<script src="public/src/virtuBg.js"></script>-->
 </body>
 </html>
