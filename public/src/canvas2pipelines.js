@@ -30,13 +30,15 @@ async function loadMeetModel(tflite, segmentationConfig){
 
 // CONCATENATED MODULE: ./src/core/helpers/segmentationHelper.ts
 const inputResolutions = {
+	'1080p': [1920, 1080],
+	'720p': [1280, 720],
 	'360p': [640, 360],
 	'144p': [256, 144],
 	'96p': [160, 96]
 };
 
 // CONCATENATED MODULE: ./src/pipelines/canvas2d/canvas2dPipeline.ts
-function useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, tflite){
+function useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, tflite){
 	let renderRequestId;
 	const newPipeline = buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef.current, tflite);
 	async function render() {
