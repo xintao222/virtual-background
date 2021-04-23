@@ -1,6 +1,5 @@
 let localVideo = document.getElementById('localVideo')
 let canvas = document.getElementById('canvasRef')
-let resSelect = document.getElementById('resSelect')
 let bgImg = document.getElementById('bgImg')
 let localStream
 let constraints = {
@@ -61,6 +60,7 @@ function getUsingDeviceId () {
 
 function getSelectResolution(){
 	let res
+	let resSelect = document.getElementById('resSelect')
 	let selectedIndex = resSelect.options.selectedIndex
 	let selectedOption = resSelect.options[selectedIndex]
 	if(selectedOption && selectedOption.value){
@@ -69,6 +69,19 @@ function getSelectResolution(){
 	}
 
 	return res
+}
+
+function getPipeSelect(){
+	let pipeSelect = document.getElementById('pipeSelect')
+	let pipe
+	let selectedIndex = pipeSelect.options.selectedIndex
+	let selectedOption = pipeSelect.options[selectedIndex]
+	if(selectedOption && selectedOption.value){
+		console.log('selected resolution value: ', selectedOption.value)
+		pipe = selectedOption.value
+	}
+
+	return pipe
 }
 
 /**
@@ -103,7 +116,7 @@ function resolutionChange(){
 	getVideoStream()
 }
 
-let backgroundConfig = {type: "image", url: bgImg.src}
+let backgroundConfig = {type: "blur", url: ''}
 function backgroundChange(config){
 	console.log('backgroundChange: ', config)
 	backgroundConfig.type = config.type
@@ -124,7 +137,7 @@ async function canvas2pipelines(update){
 		backend: "wasmSimd",
 		inputResolution: getSelectResolution(),
 		model: "meet",
-		pipeline: "canvas2dCpu",
+		pipeline: getPipeSelect(),
 	}
 	let canvasRef = {current: canvas}
 	console.warn("sourcePlayback: ", sourcePlayback)
@@ -137,7 +150,10 @@ async function canvas2pipelines(update){
 		await loadMeetModel(tflite, segmentationConfig)
 	}
 
-	useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, tflite)
+	let backgroundImageRef = {
+		current: bgImg
+	}
+	useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, tflite, backgroundImageRef)
 }
 
 async function getVideoStream(){
@@ -158,6 +174,8 @@ async function getVideoStream(){
 			canvas.width = localVideo.videoWidth
 			canvas.height = localVideo.videoHeight
 			canvas2pipelines()
+
+			getCanvasStream()
 		}
 	}catch (error){
 		console.error(error)
@@ -169,4 +187,28 @@ window.onload = async function (){
 	getVideoStream()
 }
 
+/******************************************************************************************************************/
+// 点对点测试
+// 背景是图片时，获取到的视频拿不到图片部分
+function getCanvasStream(){
+	let stream
+	if(canvas.captureStream){
+		stream = canvas.captureStream()
+	}else if(canvas.mozCaptureStream){
+		stream = canvas.mozCaptureStream()
+	}else {
+		log.error('Current browser does not support captureStream!!')
+	}
+	console.warn('getCanvasStream: ', stream)
+	let captureStreamVideo = document.getElementById('captureStreamVideo')
+	captureStreamVideo.srcObject = stream
+}
 
+
+// var video = document.createElement('video')
+// video.id = 'captureStreamVideo'
+// video.autoplay = true
+// video.controls = true
+// var parent = document.getElementById('root')
+// parent.appendChild(video)
+// var canvas = document.querySelectorAll('canvas')[0]
