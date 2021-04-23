@@ -178,9 +178,29 @@ async function pipeConversion2Cavans(update){
 	getCanvasStream()
 }
 
+function closeStream(stream){
+	try {
+		stream.oninactive = null
+		let tracks = stream.getTracks()
+		for (let track in tracks) {
+			tracks[track].onended = null
+			console.info('close stream')
+			tracks[track].stop()
+		}
+	} catch (error) {
+		console.info('closeStream: Failed to close stream')
+		console.info(error)
+	}
+	stream = null
+}
+
 async function getVideoStream(){
 	console.warn("get video stream...")
 	try {
+		if(localStream){
+			closeStream(localStream)
+		}
+
 		let deviceId = getUsingDeviceId()
 		if(deviceId){
 			constraints.video.deviceId = deviceId
