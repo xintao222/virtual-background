@@ -6,7 +6,7 @@ async function loadMeetModel(tflite, segmentationConfig){
 	}
 
 	const modelFileName = segmentationConfig.inputResolution === '144p' ? 'segm_full_v679' : 'segm_lite_v681';
-	const modelResponse = await fetch(`${"/public"}/models/${modelFileName}.tflite`);
+	const modelResponse = await fetch(`${"public"}/models/${modelFileName}.tflite`);
 	console.warn("modelResponse: ", modelResponse)
 	const model = await modelResponse.arrayBuffer();
 	console.log('Model buffer size:', model.byteLength);
