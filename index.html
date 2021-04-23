@@ -16,91 +16,116 @@
                 <video class="makeStyles-sourcePlayback-7" id="localVideo" autoplay controls></video>
             </div>
             <div class="makeStyles-root-8">
-                <img class="makeStyles-render-9" id="bgImg" alt="" src="/public/backgrounds/architecture-5082700_1280.jpg">
-                <canvas class="makeStyles-render-9" id="canvasRef"></canvas>
-                <span class="MuiTypography-root makeStyles-stats-10 MuiTypography-caption">0 fps (resizing 0ms, inference 0ms, post-processing 0ms)</span>
+                <img class="makeStyles-render-9" id="bgImg"  src="/public/backgrounds/architecture-5082700_1280.jpg">
+                <div id="cavansArea">
+                    <canvas class="makeStyles-render-9" id="canvasRef"></canvas>
+                </div>
+                <span class="MuiTypography-root makeStyles-stats-10 MuiTypography-caption">转换后的canvas显示效果</span>
             </div>
         </div>
     </div>
 </div>
 
-<table>
-    <tr><th colspan="2">配置项列表</th></tr>
-    <tr><td>Model</td><td>Meet</td></tr>
-    <tr><td>Backend</td><td>WebAssembly SIMD</td></tr>
-    <tr><td>Pipeline</td><td>
-        <select id="pipeSelect" onchange="resolutionChange()">
-            <option value="canvas2dCpu" selected>  Canvas 2D + CPU</option>
-            <option value="webgl2">WebGL 2</option>
-        </select>
-    </td></tr>
-    <tr>
-        <td>Input resolution</td>
-        <td>
-            <select id="resSelect" onchange="resolutionChange()">
-                <option value="96p" selected>96p</option>
-                <option value="144p">144p</option>
-                <option value="360p">360p</option>
-                <option value="720p">720p</option>
-                <option value="1080p">1080p</option>
+<div style="width: 50%; float: left;position: relative;max-width: 620px;">
+    <table style="clear: both">
+        <tr><th colspan="2">配置项列表</th></tr>
+        <tr><td>Model</td><td>Meet</td></tr>
+        <tr><td>Backend</td><td>WebAssembly SIMD</td></tr>
+        <tr><td>Pipeline</td><td>
+            <select id="pipeSelect" onchange="pipeSelectChange()">
+                <option value="webgl2" selected>WebGL 2</option>
+                <option value="canvas2dCpu">  Canvas 2D + CPU</option>
             </select>
-        </td>
-    </tr>
-    <tr>
-        <td> <span>videoInput select: </span></td>
-        <td><select class="cameraSelect" id="videoList" onchange = getVideoStream()></select></td>
-    </tr>
-</table>
+        </td></tr>
+        <tr>
+            <td>Input resolution</td>
+            <td>
+                <select id="resSelect" onchange="resolutionChange()">
+                    <option value="96p" selected>96p</option>
+                    <option value="144p">144p</option>
+                    <option value="360p">360p</option>
+                    <option value="720p">720p</option>
+                    <option value="1080p">1080p</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td> <span>videoInput select: </span></td>
+            <td><select class="cameraSelect" id="videoList" onchange = getVideoStream()></select></td>
+        </tr>
+    </table>
 
-<div>
-    <h2>Background</h2>
-    <button onclick="backgroundChange({type: 'none', url: ''})">
-        <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"></path>
-        </svg>
-    </button>
-    <button onclick="backgroundChange({type: 'blur', url: ''})">
-        <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M6 13c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 4c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0-8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-3 .5c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zM6 5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm15 5.5c.28 0 .5-.22.5-.5s-.22-.5-.5-.5-.5.22-.5.5.22.5.5.5zM14 7c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0-3.5c.28 0 .5-.22.5-.5s-.22-.5-.5-.5-.5.22-.5.5.22.5.5.5zm-11 10c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zm7 7c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zm0-17c.28 0 .5-.22.5-.5s-.22-.5-.5-.5-.5.22-.5.5.22.5.5.5zM10 7c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0 5.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm8 .5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 4c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0-8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0-4c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm3 8.5c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zM14 17c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 3.5c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zm-4-12c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0 8.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm4-4.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-4c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"></path>
-        </svg>
-    </button>
+    <div>
+        <h2>Background</h2>
+        <button onclick="backgroundChange({type: 'none', url: ''})">
+            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"></path>
+            </svg>
+        </button>
+        <button onclick="backgroundChange({type: 'blur', url: ''})">
+            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 13c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 4c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0-8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-3 .5c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zM6 5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm15 5.5c.28 0 .5-.22.5-.5s-.22-.5-.5-.5-.5.22-.5.5.22.5.5.5zM14 7c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0-3.5c.28 0 .5-.22.5-.5s-.22-.5-.5-.5-.5.22-.5.5.22.5.5.5zm-11 10c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zm7 7c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zm0-17c.28 0 .5-.22.5-.5s-.22-.5-.5-.5-.5.22-.5.5.22.5.5.5zM10 7c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0 5.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm8 .5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 4c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0-8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0-4c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm3 8.5c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zM14 17c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 3.5c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zm-4-12c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0 8.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm4-4.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-4c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"></path>
+            </svg>
+        </button>
 
-    <button class="backgroundButton" onclick="backgroundChange({type: 'image', url: '/public/backgrounds/architecture-5082700_1280.jpg'})">
-        <img class="backgroundImg" src="/public/backgrounds/architecture-5082700_1280.jpg">
-    </button>
-    <button class="backgroundButton" onclick="backgroundChange({type: 'image', url: '/public/backgrounds/porch-691330_1280.jpg'})">
-        <img class="backgroundImg" src="/public/backgrounds/porch-691330_1280.jpg">
-    </button>
-    <button class="backgroundButton" onclick="backgroundChange({type: 'image', url: '/public/backgrounds/saxon-switzerland-539418_1280.jpg'})">
-        <img class="backgroundImg" src="/public/backgrounds/saxon-switzerland-539418_1280.jpg">
-    </button>
-    <button class="backgroundButton" onclick="backgroundChange({type: 'image', url: '/public/backgrounds/shibuyasky-4768679_1280.jpg'})">
-        <img class="backgroundImg" src="/public/backgrounds/shibuyasky-4768679_1280.jpg">
-    </button>
+        <button class="backgroundButton" onclick="backgroundChange({type: 'image', url: '/public/backgrounds/architecture-5082700_1280.jpg'})">
+            <img class="backgroundImg" src="/public/backgrounds/architecture-5082700_1280.jpg">
+        </button>
+        <button class="backgroundButton" onclick="backgroundChange({type: 'image', url: '/public/backgrounds/porch-691330_1280.jpg'})">
+            <img class="backgroundImg" src="/public/backgrounds/porch-691330_1280.jpg">
+        </button>
+        <button class="backgroundButton" onclick="backgroundChange({type: 'image', url: '/public/backgrounds/saxon-switzerland-539418_1280.jpg'})">
+            <img class="backgroundImg" src="/public/backgrounds/saxon-switzerland-539418_1280.jpg">
+        </button>
+        <button class="backgroundButton" onclick="backgroundChange({type: 'image', url: '/public/backgrounds/shibuyasky-4768679_1280.jpg'})">
+            <img class="backgroundImg" src="/public/backgrounds/shibuyasky-4768679_1280.jpg">
+        </button>
+    </div>
 </div>
-
-
-<div>
+<div style=" width: 50%; float: left;position: relative;max-width: 620px;">
     <video id="captureStreamVideo" src="" autoplay></video>
+    <span class="MuiTypography-root makeStyles-stats-10 MuiTypography-caption">从canvas获取的视频流</span>
 </div>
 
 <script src="public/tflite/tflite.js"></script>
 <script src="public/tflite/tflite-simd.js"></script>
-<script src="public/src/canvas2pipelines.js"></script>
+<script src="public/src/pipelines.js"></script>
 <script src="index.js"></script>
 
 
 
 <!--&lt;!&ndash;原本的处理&ndash;&gt;-->
 <!--<div id="root"></div>-->
+<!--<div>-->
+<!--    <video id="captureStreamVideo" src="" autoplay></video>-->
+<!--</div>-->
 
-<!--&lt;!&ndash;&lt;!&ndash;修改打包文件后生成的文件&ndash;&gt;&ndash;&gt;-->
+<!--<script>-->
+<!--	function getCanvasStream(){-->
+<!--		let canvas = document.querySelectorAll('canvas')[0]-->
+<!--		let stream-->
+<!--		if(canvas.captureStream){-->
+<!--			stream = canvas.captureStream(5)-->
+<!--		}else if(canvas.mozCaptureStream){-->
+<!--			stream = canvas.mozCaptureStream(5)-->
+<!--		}else {-->
+<!--			log.error('Current browser does not support captureStream!!')-->
+<!--		}-->
+<!--		console.warn('getCanvasStream: ', stream)-->
+<!--		let captureStreamVideo = document.getElementById('captureStreamVideo')-->
+<!--		captureStreamVideo.srcObject = stream-->
+<!--	}-->
+
+<!--</script>-->
+
+<!--&lt;!&ndash;修改打包文件后生成的文件&ndash;&gt;-->
 <!--<script src="public/tflite/tflite.js"></script>-->
 <!--<script src="public/tflite/tflite-simd.js"></script>-->
 <!--<script src="dist/react-refresh-runtime.development.js"></script>-->
 <!--<script src="dist/runtime-main.js"></script>-->
 <!--<script src="dist/2.chunk.js"></script>-->
 <!--<script src="dist/main.chunk.js"></script>-->
-<!--<script src="public/src/virtuBg.js"></script>-->
+<!--<script src="public/src/pipelines.js"></script>-->
+
 </body>
 </html>

@@ -27,8 +27,10 @@ async function loadMeetModel(tflite, segmentationConfig){
 	console.log('Output channels:', newSelectedTFLite._getOutputChannelCount());
 }
 
-// CONCATENATED MODULE: ./src/pipelines/webgl2/webgl2pipelines.ts
-function buildWebGL2Pipeline(sourcePlayback, backgroundImage, backgroundConfig, segmentationConfig, canvas, tflite) {
+// CONCATENATED MODULE: ./src/pipelines/webgl2/webgl2Pipeline.ts
+
+
+function buildWebGL2Pipeline(sourcePlayback, backgroundImage, backgroundConfig, segmentationConfig, canvas, tflite, addFrameEvent) {
 	const vertexShaderSource = glsl`#version 300 es
 
     in vec2 a_position;
@@ -40,126 +42,96 @@ function buildWebGL2Pipeline(sourcePlayback, backgroundImage, backgroundConfig, 
       gl_Position = vec4(a_position, 0.0, 1.0);
       v_texCoord = a_texCoord;
     }
-  `
-
-	const { width: frameWidth, height: frameHeight } = sourcePlayback
-	const [segmentationWidth, segmentationHeight] = inputResolutions[segmentationConfig.inputResolution]
-	const gl = canvas.getContext('webgl2')
-	const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource)
-
-	const vertexArray = gl.createVertexArray()
-	gl.bindVertexArray(vertexArray)
-
-	const positionBuffer = gl.createBuffer()
-	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
-	gl.bufferData(
-		gl.ARRAY_BUFFER,
-		new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0]),
-		gl.STATIC_DRAW
-	)
-
-	const texCoordBuffer = gl.createBuffer()
-	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer)
-	gl.bufferData(
-		gl.ARRAY_BUFFER,
-		new Float32Array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0]),
-		gl.STATIC_DRAW
-	)
-
-	// We don't use texStorage2D here because texImage2D seems faster
+  `;
+	const {
+		width: frameWidth,
+		height: frameHeight
+	} = sourcePlayback;
+	const [segmentationWidth, segmentationHeight] = inputResolutions[segmentationConfig.inputResolution];
+	const gl = canvas.getContext('webgl2');
+	const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+	const vertexArray = gl.createVertexArray();
+	gl.bindVertexArray(vertexArray);
+	const positionBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0]), gl.STATIC_DRAW);
+	const texCoordBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0]), gl.STATIC_DRAW); // We don't use texStorage2D here because texImage2D seems faster
 	// to upload video texture than texSubImage2D even though the latter
 	// is supposed to be the recommended way:
 	// https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices#use_texstorage_to_create_textures
-	const inputFrameTexture = gl.createTexture()
-	gl.bindTexture(gl.TEXTURE_2D, inputFrameTexture)
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 
-	// TODO Rename segmentation and person mask to be more specific
-	const segmentationTexture = createTexture(gl, gl.RGBA8, segmentationWidth, segmentationHeight)
-	const personMaskTexture = createTexture(gl, gl.RGBA8, frameWidth, frameHeight)
+	const inputFrameTexture = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, inputFrameTexture);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST); // TODO Rename segmentation and person mask to be more specific
 
-	const resizingStage = buildResizingStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite)
-	const softmaxStage = buildSoftmaxStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite, segmentationTexture)
-	const jointBilateralFilterStage = buildJointBilateralFilterStage(
-		gl,
-		vertexShader,
-		positionBuffer,
-		texCoordBuffer,
-		segmentationTexture,
-		segmentationConfig,
-		personMaskTexture,
-		canvas
-	)
-	const backgroundStage =
-		backgroundConfig.type === 'blur'
-			? buildBackgroundBlurStage(gl, positionBuffer, texCoordBuffer, personMaskTexture, canvas)
-			: buildBackgroundImageStage(gl, positionBuffer, texCoordBuffer, personMaskTexture, backgroundImage, canvas)
+	const segmentationTexture = createTexture(gl, gl.RGBA8, segmentationWidth, segmentationHeight);
+	const personMaskTexture = createTexture(gl, gl.RGBA8, frameWidth, frameHeight);
+	const resizingStage = buildResizingStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite);
+	const softmaxStage = buildSoftmaxStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite, segmentationTexture);
+	const jointBilateralFilterStage = buildJointBilateralFilterStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationTexture, segmentationConfig, personMaskTexture, canvas);
+	const backgroundStage = backgroundConfig.type === 'blur'
+		? buildBackgroundBlurStage(gl, positionBuffer, texCoordBuffer, personMaskTexture, canvas)
+		: buildBackgroundImageStage(gl, positionBuffer, texCoordBuffer, personMaskTexture, backgroundImage, canvas);
 
 	async function render() {
-		gl.clearColor(0, 0, 0, 0)
-		gl.clear(gl.COLOR_BUFFER_BIT)
-
-		gl.activeTexture(gl.TEXTURE0)
-		gl.bindTexture(gl.TEXTURE_2D, inputFrameTexture)
-
-		// texImage2D seems faster than texSubImage2D to upload
+		gl.clearColor(0, 0, 0, 0);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, inputFrameTexture); // texImage2D seems faster than texSubImage2D to upload
 		// video texture
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, sourcePlayback.htmlElement)
 
-		gl.bindVertexArray(vertexArray)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, sourcePlayback.htmlElement);
+		gl.bindVertexArray(vertexArray);
+		resizingStage.render();
 
-		resizingStage.render()
+		tflite._runInference();
 
-		tflite._runInference()
-
-		softmaxStage.render()
-		jointBilateralFilterStage.render()
-		backgroundStage.render()
+		softmaxStage.render();
+		jointBilateralFilterStage.render();
+		backgroundStage.render();
 	}
 
 	function updatePostProcessingConfig(postProcessingConfig) {
-		jointBilateralFilterStage.updateSigmaSpace(
-			postProcessingConfig.jointBilateralFilter.sigmaSpace
-		)
-		jointBilateralFilterStage.updateSigmaColor(
-			postProcessingConfig.jointBilateralFilter.sigmaColor
-		)
-		// TODO Handle no background in a separate pipeline path
+		jointBilateralFilterStage.updateSigmaSpace(postProcessingConfig.jointBilateralFilter.sigmaSpace);
+		jointBilateralFilterStage.updateSigmaColor(postProcessingConfig.jointBilateralFilter.sigmaColor); // TODO Handle no background in a separate pipeline path
+
 		if (backgroundConfig.type === 'none') {
-			const backgroundImageStage = backgroundStage
-			backgroundImageStage.updateCoverage([0, 0.9999])
-			backgroundImageStage.updateLightWrapping(0)
+			const backgroundImageStage = backgroundStage;
+			backgroundImageStage.updateCoverage([0, 0.9999]);
+			backgroundImageStage.updateLightWrapping(0);
 		} else if (backgroundConfig.type === 'image') {
-			const backgroundImageStage = backgroundStage
-			backgroundImageStage.updateCoverage(postProcessingConfig.coverage)
-			backgroundImageStage.updateLightWrapping(
-				postProcessingConfig.lightWrapping
-			)
-			backgroundImageStage.updateBlendMode(postProcessingConfig.blendMode)
+			const backgroundImageStage = backgroundStage;
+			backgroundImageStage.updateCoverage(postProcessingConfig.coverage);
+			backgroundImageStage.updateLightWrapping(postProcessingConfig.lightWrapping);
+			backgroundImageStage.updateBlendMode(postProcessingConfig.blendMode);
 		}
 	}
 
 	function cleanUp() {
-		backgroundStage.cleanUp()
-		jointBilateralFilterStage.cleanUp()
-		softmaxStage.cleanUp()
-		resizingStage.cleanUp()
-
-		gl.deleteTexture(personMaskTexture)
-		gl.deleteTexture(segmentationTexture)
-		gl.deleteTexture(inputFrameTexture)
-		gl.deleteBuffer(texCoordBuffer)
-		gl.deleteBuffer(positionBuffer)
-		gl.deleteVertexArray(vertexArray)
-		gl.deleteShader(vertexShader)
+		backgroundStage.cleanUp();
+		jointBilateralFilterStage.cleanUp();
+		softmaxStage.cleanUp();
+		resizingStage.cleanUp();
+		gl.deleteTexture(personMaskTexture);
+		gl.deleteTexture(segmentationTexture);
+		gl.deleteTexture(inputFrameTexture);
+		gl.deleteBuffer(texCoordBuffer);
+		gl.deleteBuffer(positionBuffer);
+		gl.deleteVertexArray(vertexArray);
+		gl.deleteShader(vertexShader);
 	}
 
-	return { render, updatePostProcessingConfig, cleanUp }
+	return {
+		render,
+		updatePostProcessingConfig,
+		cleanUp
+	};
 }
-
 
 // CONCATENATED MODULE: ./src/core/helpers/segmentationHelper.ts
 const inputResolutions = {
@@ -169,14 +141,30 @@ const inputResolutions = {
 	'144p': [256, 144],
 	'96p': [160, 96]
 };
+const postProcessingConfig = {
+	smoothSegmentationMask: true,
+	jointBilateralFilter: {
+		sigmaSpace: 1,
+		sigmaColor: 0.1
+	},
+	coverage: [0.5, 0.75],
+	lightWrapping: 0.3,
+	blendMode: 'screen'
+}
 
 // CONCATENATED MODULE: ./src/pipelines/canvas2d/canvas2dPipeline.ts
 function useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, tflite, backgroundImageRef){
 	let renderRequestId;
+	// if(renderRequestId){
+	// 	cancelAnimationFrame(renderRequestId);
+	// 	pipeline.cleanUp();
+	// 	console.warn('Animation stopped:', sourcePlayback, backgroundConfig, segmentationConfig);
+	// 	pipeline = null;
+	// }
 
 	const newPipeline = segmentationConfig.pipeline === 'webgl2' ? buildWebGL2Pipeline(
 			sourcePlayback,
-			backgroundImageRef.current,
+			backgroundImageRef,
 			backgroundConfig,
 			segmentationConfig,
 			canvasRef.current,
@@ -195,6 +183,8 @@ function useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConf
 
 	render();
 	console.warn('Animation started:', sourcePlayback, backgroundConfig, segmentationConfig);
+
+	newPipeline.updatePostProcessingConfig(postProcessingConfig);
 }
 
 function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvas, tflite, addFrameEvent) {
@@ -263,7 +253,6 @@ function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationCon
 
 	function runPostProcessing() {
 		var _postProcessingConfig;
-
 		ctx.globalCompositeOperation = 'copy';
 		ctx.filter = 'none';
 
@@ -458,10 +447,7 @@ function buildBackgroundBlurStage(gl, positionBuffer, texCoordBuffer, personMask
       outColor = vec4(frameColor.rgb + (1.0 - frameColor.a) * centerColor.rgb, 1.0);
     }
   `;
-	const {
-		width: outputWidth,
-		height: outputHeight
-	} = canvas;
+	const {width: outputWidth, height: outputHeight} = canvas;
 	const texelWidth = 1 / outputWidth;
 	const texelHeight = 1 / outputHeight;
 	const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
@@ -588,10 +574,7 @@ function buildBackgroundImageStage(gl, positionBuffer, texCoordBuffer, personMas
       outColor = vec4(frameColor * personMask + backgroundColor * (1.0 - personMask), 1.0);
     }
   `;
-	const {
-		width: outputWidth,
-		height: outputHeight
-	} = canvas;
+	const {width: outputWidth, height: outputHeight} = canvas;
 	const outputRatio = outputWidth / outputHeight;
 	const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
 	const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);

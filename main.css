@@ -84,7 +84,7 @@ select{
     background-color: rgba(0, 0, 0, 0.48);
 }
 .MuiTypography-caption {
-    font-size: 0.75rem;
+    font-size: 0.95rem;
     font-family: "Roboto", "Helvetica", "Arial", sans-serif;
     font-weight: 400;
     line-height: 1.66;

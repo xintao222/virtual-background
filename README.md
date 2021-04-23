@@ -2,8 +2,11 @@
 
 ## 修改记录
 
-- 2021.4.23 添加WebGL 2选择
-
+- 2021.4.23 
+    - 添加WebGL 2选择
+    - 完成WebGL 2转换，解决canvas黑屏问题：pipeline 没有更新updatePostProcessingConfig
+    - canvas.getContext('2d') 返回undefined：原因是canvas请求了不同类型的上下文，就可能会发生这种情况。
+                                             
 - 2021.4.22 添加摄像头选择、配置项设置和背景图片切换
 
 - 2021.4.21 初步实现react和webpack关联部分的剥离，摘除主要代码实现背景虚拟处理

@@ -116,18 +116,34 @@ function resolutionChange(){
 	getVideoStream()
 }
 
-let backgroundConfig = {type: "blur", url: ''}
+let backgroundConfig = {type: "image", url: bgImg.src}
 function backgroundChange(config){
 	console.log('backgroundChange: ', config)
 	backgroundConfig.type = config.type
 	backgroundConfig.url = config.url
 	bgImg.src = config.url
 
-	canvas2pipelines(true)
+	pipeConversion2Cavans(true)
 }
+
+function pipeSelectChange(){
+	// todo: 重新创建canvas，以解决canvas getContext（“2d”）返回null问题，canvas请求过其他类型后不能再请求不同类型的上下文
+	canvas.remove()
+	let parent = document.getElementById('cavansArea')
+	let newCavans = document.createElement('canvas')
+	newCavans.id = 'canvasRef'
+	newCavans.classList.add('makeStyles-render-9')
+	newCavans.width = localVideo.videoWidth
+	newCavans.height = localVideo.videoHeight
+	parent.appendChild(newCavans)
+	canvas = newCavans
+
+	pipeConversion2Cavans(true)
+}
+
 /******************************************************************************************************************/
 let tflite
-async function canvas2pipelines(update){
+async function pipeConversion2Cavans(update){
 	let sourcePlayback = {
 		htmlElement: localVideo,
 		width: localVideo.videoWidth,
@@ -150,10 +166,16 @@ async function canvas2pipelines(update){
 		await loadMeetModel(tflite, segmentationConfig)
 	}
 
-	let backgroundImageRef = {
-		current: bgImg
+	if(segmentationConfig.pipeline === 'webgl2'){
+		bgImg.hidden = true
+	}else {
+		bgImg.hidden = false
 	}
-	useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, tflite, backgroundImageRef)
+
+	useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, tflite, bgImg)
+
+	console.warn("show video stream get from canvas!")
+	getCanvasStream()
 }
 
 async function getVideoStream(){
@@ -173,9 +195,7 @@ async function getVideoStream(){
 			console.log('video onloadedmetadata.')
 			canvas.width = localVideo.videoWidth
 			canvas.height = localVideo.videoHeight
-			canvas2pipelines()
-
-			getCanvasStream()
+			pipeConversion2Cavans()
 		}
 	}catch (error){
 		console.error(error)
