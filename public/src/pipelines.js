@@ -5,6 +5,7 @@ function RenderingPipeline(){
 	this.tflite = null
 	this.canvasRef= null
 	this.renderRequestId = null
+	this.canvas2stream = null
 
 	this.sourcePlayback = null
 	this.backgroundConfig = null
@@ -90,7 +91,31 @@ RenderingPipeline.prototype.loadTFLiteModel = async function (tflite, segmentati
 	this.tflite = newSelectedTFLite
 }
 
-RenderingPipeline.prototype.useRenderingPipeline = async function (sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, backgroundImageRef){
+/**
+ * todo: 重新创建canvas，以解决canvas getContext（“2d”）返回null问题，canvas请求过其他类型后不能再请求不同类型的上下文
+ * @returns {HTMLCanvasElement}
+ */
+RenderingPipeline.prototype.getNewCanvas = function (){
+	if(this.canvasRef && this.canvasRef.current){
+		this.canvasRef.current.remove()
+	}
+	let canvas = document.createElement('canvas')
+	canvas.id = 'canvasRef'
+	canvas.width = localVideo.videoWidth
+	canvas.height = localVideo.videoHeight
+
+	if(canvas.captureStream){
+		this.canvas2stream = canvas.captureStream()
+	}else if(canvas.mozCaptureStream){
+		this.canvas2stream = canvas.mozCaptureStream()
+	}else {
+		log.error('Current browser does not support captureStream!!')
+	}
+
+	return canvas
+}
+
+RenderingPipeline.prototype.useRenderingPipeline = async function (sourcePlayback, backgroundConfig, segmentationConfig, backgroundImageRef, callback){
 	if(!this.tflite){
 		console.log('load tflite module..')
 		this.tflite = await createTFLiteModule()
@@ -103,6 +128,9 @@ RenderingPipeline.prototype.useRenderingPipeline = async function (sourcePlaybac
 	// 	this.pipeline = null;
 	// 	this.renderRequestId = null
 	// }
+	let canvasRef = {
+		current: this.getNewCanvas()
+	}
 
 	let newPipeline = segmentationConfig.pipeline === 'webgl2' ? this.buildWebGL2Pipeline(
 		sourcePlayback,
@@ -128,6 +156,8 @@ RenderingPipeline.prototype.useRenderingPipeline = async function (sourcePlaybac
 	this.pipeline = newPipeline
 	newPipeline.updatePostProcessingConfig(this.postProcessingConfig);
 	this.setProcessingConfig(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, backgroundImageRef)
+
+	callback && callback({stream: this.canvas2stream})
 }
 
 RenderingPipeline.prototype.buildCanvas2dPipeline = function (sourcePlayback, backgroundConfig, segmentationConfig, canvas, tflite) {

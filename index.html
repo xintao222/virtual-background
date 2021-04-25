@@ -17,8 +17,8 @@
             </div>
             <div class="makeStyles-root-8">
                 <img hidden class="makeStyles-render-9" id="bgImg"  src="public/backgrounds/qie.jpg">
-                <div id="cavansArea">
-                    <canvas class="makeStyles-render-9" id="canvasRef"></canvas>
+                <div id="canvasArea">
+<!--                    <canvas class="makeStyles-render-9" id="canvasRef"></canvas>-->
                 </div>
                 <span class="MuiTypography-root makeStyles-stats-10 MuiTypography-caption">转换后的canvas显示效果</span>
             </div>
@@ -30,14 +30,14 @@
     <table style="clear: both">
         <tr><th colspan="2">配置项列表</th></tr>
         <tr><td>Model</td><td>
-            <select id="modelSelect" onchange="modelSelectChange()">
+            <select id="modelSelect" onchange="pipeConversion2Cavans()">
                 <option value="meet" selected>Meet</option>
 <!--                <option value="mlkit">ML Kit</option>-->
             </select>
         </td></tr>
         <tr><td>Backend</td><td>WebAssembly SIMD</td></tr>
         <tr><td>Pipeline</td><td>
-            <select id="pipeSelect" onchange="pipeSelectChange()">
+            <select id="pipeSelect" onchange="pipeConversion2Cavans()">
                 <option value="webgl2" selected>WebGL 2</option>
                 <option value="canvas2dCpu">  Canvas 2D + CPU</option>
             </select>

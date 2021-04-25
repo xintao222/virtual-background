@@ -1,6 +1,6 @@
 let localVideo = document.getElementById('localVideo')
-let canvas = document.getElementById('canvasRef')
 let backgroundImageRef = document.getElementById('bgImg')
+let captureStreamVideo = document.getElementById('captureStreamVideo')
 let localStream
 let usePipeline
 let constraints = {
@@ -77,20 +77,6 @@ function closeStream(stream){
 	stream = null
 }
 
-function getCanvasStream(){
-	let stream
-	if(canvas.captureStream){
-		stream = canvas.captureStream()
-	}else if(canvas.mozCaptureStream){
-		stream = canvas.mozCaptureStream()
-	}else {
-		log.error('Current browser does not support captureStream!!')
-	}
-	console.warn('getCanvasStream: ', stream)
-	let captureStreamVideo = document.getElementById('captureStreamVideo')
-	captureStreamVideo.srcObject = stream
-}
-
 async function getVideoStream(){
 	console.warn("get video stream...")
 	try {
@@ -113,8 +99,6 @@ async function getVideoStream(){
 		localVideo.srcObject = localStream
 		localVideo.onloadedmetadata = async function (){
 			console.log('video onloadedmetadata.')
-			canvas.width = localVideo.videoWidth
-			canvas.height = localVideo.videoHeight
 			pipeConversion2Cavans()
 		}
 	}catch (error){
@@ -146,25 +130,6 @@ function videoInputResChange(){
 	getVideoStream()
 }
 
-function pipeSelectChange(){
-	// todo: 重新创建canvas，以解决canvas getContext（“2d”）返回null问题，canvas请求过其他类型后不能再请求不同类型的上下文
-	canvas.remove()
-	let parent = document.getElementById('cavansArea')
-	let newCavans = document.createElement('canvas')
-	newCavans.id = 'canvasRef'
-	newCavans.classList.add('makeStyles-render-9')
-	newCavans.width = localVideo.videoWidth
-	newCavans.height = localVideo.videoHeight
-	parent.appendChild(newCavans)
-	canvas = newCavans
-
-	pipeConversion2Cavans(pipeChange)
-}
-
-function modelSelectChange(){
-	pipeConversion2Cavans()
-}
-
 async function pipeConversion2Cavans(){
 	let sourcePlayback = {
 		htmlElement: localVideo,
@@ -177,23 +142,25 @@ async function pipeConversion2Cavans(){
 		model: getSelectVaule('modelSelect') || 'meet',
 		pipeline: getSelectVaule('pipeSelect'),
 	}
-	let canvasRef = {current: canvas}
 	console.log("sourcePlayback: ", sourcePlayback)
 	console.log('segmentationConfig: ', segmentationConfig)
 	console.log('backgroundConfig: ', backgroundConfig)
-	console.log("canvasRef: ", canvasRef)
-
-	if(!usePipeline){
-		usePipeline = new RenderingPipeline()
-	}
-	usePipeline.useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, backgroundImageRef)
 
 	if(segmentationConfig.pipeline === 'webgl2'){
 		backgroundImageRef.hidden = true
 	}else {
 		backgroundImageRef.hidden = false
 	}
-	getCanvasStream()
+
+	if(!usePipeline){
+		usePipeline = new RenderingPipeline()
+	}
+	usePipeline.useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, backgroundImageRef, function (data){
+		console.warn("data: ", data)
+		if(data.stream){
+			captureStreamVideo.srcObject = data.stream
+		}
+	})
 }
 
 let backgroundConfig = {type: "image", url: backgroundImageRef.src}
