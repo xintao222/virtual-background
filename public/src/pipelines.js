@@ -1,22 +1,72 @@
-// CONCATENATED MODULE: ./src/core/hooks/useTFLite.ts
-function getTFLiteModelFileName(model, inputResolution) {
-	switch (model) {
-		case 'meet':
-			return inputResolution === '256x144' ? 'segm_full_v679' : 'segm_lite_v681'
-		case 'mlkit':
-			return 'selfiesegmentation_mlkit-256x256-2021_01_19-v1215.f16'
-		default:
-			throw new Error(`No TFLite file for this segmentation model: ${model}`)
+
+function RenderingPipeline(){
+	this.glsl = String.raw
+	this.pipeline = null
+	this.tflite = null
+	this.canvasRef= null
+	this.renderRequestId = null
+
+	this.sourcePlayback = null
+	this.backgroundConfig = null
+	this.segmentationConfig = null
+	this.backgroundImageRef = null
+
+	this.inputResolutions = {
+		'1920x1080': [1920, 1080],
+		'1280x720': [1280, 720],
+		'640x360': [640, 360],
+		'256x256': [256, 256],
+		'256x144': [256, 144],
+		'160x96': [160, 96],
+	}
+	this.postProcessingConfig = {
+		smoothSegmentationMask: true,
+		jointBilateralFilter: {
+			sigmaSpace: 1,
+			sigmaColor: 0.1
+		},
+		coverage: [0.5, 0.75],
+		lightWrapping: 0.3,
+		blendMode: 'screen'
 	}
 }
 
-async function loadTFLiteModel(tflite, segmentationConfig){
+RenderingPipeline.prototype.setProcessingConfig = function (sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, backgroundImageRef){
+	this.sourcePlayback = sourcePlayback
+	this.backgroundConfig = backgroundConfig
+	this.segmentationConfig = segmentationConfig
+	this.canvasRef = canvasRef
+	this.backgroundImageRef = backgroundImageRef
+}
+
+RenderingPipeline.prototype.getTFLiteModelFileName = function (model, inputResolution){
+	let name = ''
+	switch (model) {
+		case 'meet':
+			name = inputResolution === '256x144' ? 'segm_full_v679' : 'segm_lite_v681'
+			break
+		case 'mlkit':
+			name = 'selfiesegmentation_mlkit-256x256-2021_01_19-v1215.f16'
+			break
+		default:
+			throw new Error(`No TFLite file for this segmentation model: ${model}`)
+	}
+	return name
+}
+
+/**
+ * useTFLite.ts
+ * @param tflite
+ * @param segmentationConfig
+ * @returns {Promise<void>}
+ */
+RenderingPipeline.prototype.loadTFLiteModel = async function (tflite, segmentationConfig){
 	const newSelectedTFLite = tflite
 	if (!newSelectedTFLite) {
 		throw new Error(`TFLite backend unavailable: ${segmentationConfig.backend}`);
 	}
 
-	let modelFileName =  getTFLiteModelFileName(segmentationConfig.model, segmentationConfig.inputResolution)
+	let modelFileName = this.getTFLiteModelFileName(segmentationConfig.model, segmentationConfig.inputResolution)
 	console.log('Loading tflite model:', modelFileName)
 	const modelResponse = await fetch(`${"public"}/models/${modelFileName}.tflite`);
 	console.warn("modelResponse: ", modelResponse)
@@ -37,67 +87,52 @@ async function loadTFLiteModel(tflite, segmentationConfig){
 	console.log('Output height:', newSelectedTFLite._getOutputHeight());
 	console.log('Output width:', newSelectedTFLite._getOutputWidth());
 	console.log('Output channels:', newSelectedTFLite._getOutputChannelCount());
+	this.tflite = newSelectedTFLite
 }
 
-// CONCATENATED MODULE: ./src/core/helpers/segmentationHelper.ts
-const inputResolutions = {
-	'1920x1080': [1920, 1080],
-	'1280x720': [1280, 720],
-	'640x360': [640, 360],
-	'256x256': [256, 256],
-	'256x144': [256, 144],
-	'160x96': [160, 96],
-};
-const postProcessingConfig = {
-	smoothSegmentationMask: true,
-	jointBilateralFilter: {
-		sigmaSpace: 1,
-		sigmaColor: 0.1
-	},
-	coverage: [0.5, 0.75],
-	lightWrapping: 0.3,
-	blendMode: 'screen'
-}
-// CONCATENATED MODULE: ./src/pipelines/canvas2d/canvas2dPipeline.ts
-function useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, tflite, backgroundImageRef){
-	let newPipeline = null
-	let renderRequestId;
-	// if(renderRequestId){
-	// 	cancelAnimationFrame(renderRequestId);
-	// 	newPipeline.cleanUp();
+RenderingPipeline.prototype.useRenderingPipeline = async function (sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, backgroundImageRef){
+	if(!this.tflite){
+		console.log('load tflite module..')
+		this.tflite = await createTFLiteModule()
+		await usePipeline.loadTFLiteModel(this.tflite, segmentationConfig)
+	}
+	// if(this.renderRequestId){
+	// 	await cancelAnimationFrame(this.renderRequestId);
+	// 	await this.pipeline.cleanUp();
 	// 	console.warn('Animation stopped:', sourcePlayback, backgroundConfig, segmentationConfig);
-	// 	newPipeline = null;
+	// 	this.pipeline = null;
+	// 	this.renderRequestId = null
 	// }
 
-	newPipeline = segmentationConfig.pipeline === 'webgl2' ? buildWebGL2Pipeline(
-			sourcePlayback,
-			backgroundImageRef,
-			backgroundConfig,
-			segmentationConfig,
-			canvasRef.current,
-			tflite
-		) : buildCanvas2dPipeline(
-			sourcePlayback,
-			backgroundConfig,
-			segmentationConfig,
-			canvasRef.current,
-			tflite
-		);
-	async function render() {
+	let newPipeline = segmentationConfig.pipeline === 'webgl2' ? this.buildWebGL2Pipeline(
+		sourcePlayback,
+		backgroundImageRef,
+		backgroundConfig,
+		segmentationConfig,
+		canvasRef.current,
+		this.tflite
+	) : this.buildCanvas2dPipeline(
+		sourcePlayback,
+		backgroundConfig,
+		segmentationConfig,
+		canvasRef.current,
+		this.tflite
+	);
+	async function render(This) {
 		await newPipeline.render();
-		renderRequestId = requestAnimationFrame(render);
+		This.renderRequestId = requestAnimationFrame(render);
 	}
-
-	render();
+	render(this);
 	console.warn('Animation started:', sourcePlayback, backgroundConfig, segmentationConfig);
 
-	newPipeline.updatePostProcessingConfig(postProcessingConfig);
-	return newPipeline
+	this.pipeline = newPipeline
+	newPipeline.updatePostProcessingConfig(this.postProcessingConfig);
+	this.setProcessingConfig(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, backgroundImageRef)
 }
 
-function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvas, tflite, addFrameEvent) {
+RenderingPipeline.prototype.buildCanvas2dPipeline = function (sourcePlayback, backgroundConfig, segmentationConfig, canvas, tflite) {
 	const ctx = canvas.getContext('2d');
-	const [segmentationWidth, segmentationHeight] = inputResolutions[segmentationConfig.inputResolution];
+	const [segmentationWidth, segmentationHeight] = this.inputResolutions[segmentationConfig.inputResolution];
 	const segmentationPixelCount = segmentationWidth * segmentationHeight;
 	const segmentationMask = new ImageData(segmentationWidth, segmentationHeight);
 	const segmentationMaskCanvas = document.createElement('canvas');
@@ -111,14 +146,11 @@ function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationCon
 	async function render() {
 		if (backgroundConfig.type !== 'none') {
 			resizeSource();
-
 		}
-		addFrameEvent && addFrameEvent();
 
 		if (backgroundConfig.type !== 'none') {
 			runTFLiteInference();
 		}
-		addFrameEvent && addFrameEvent();
 		runPostProcessing();
 	}
 
@@ -203,9 +235,18 @@ function buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationCon
 	};
 }
 
-// CONCATENATED MODULE: ./src/pipelines/webgl2/webgl2Pipeline.ts
-function buildWebGL2Pipeline(sourcePlayback, backgroundImage, backgroundConfig, segmentationConfig, canvas, tflite) {
-	const vertexShaderSource = glsl`#version 300 es
+/**
+ * webgl2Pipeline.ts
+ * @param sourcePlayback
+ * @param backgroundImage
+ * @param backgroundConfig
+ * @param segmentationConfig
+ * @param canvas
+ * @param tflite
+ * @returns {{updatePostProcessingConfig: updatePostProcessingConfig, cleanUp: cleanUp, render: render}}
+ */
+RenderingPipeline.prototype.buildWebGL2Pipeline = function (sourcePlayback, backgroundImage, backgroundConfig, segmentationConfig, canvas, tflite) {
+	const vertexShaderSource = this.glsl`#version 300 es
 
     in vec2 a_position;
     in vec2 a_texCoord;
@@ -218,9 +259,9 @@ function buildWebGL2Pipeline(sourcePlayback, backgroundImage, backgroundConfig, 
     }
   `;
 	const {width: frameWidth, height: frameHeight} = sourcePlayback;
-	const [segmentationWidth, segmentationHeight] = inputResolutions[segmentationConfig.inputResolution];
+	const [segmentationWidth, segmentationHeight] = this.inputResolutions[segmentationConfig.inputResolution];
 	const gl = canvas.getContext('webgl2');
-	const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+	const vertexShader = this.compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
 	const vertexArray = gl.createVertexArray();
 	gl.bindVertexArray(vertexArray);
 	const positionBuffer = gl.createBuffer();
@@ -240,17 +281,16 @@ function buildWebGL2Pipeline(sourcePlayback, backgroundImage, backgroundConfig, 
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST); // TODO Rename segmentation and person mask to be more specific
 
-	const segmentationTexture = createTexture(gl, gl.RGBA8, segmentationWidth, segmentationHeight);
-	const personMaskTexture = createTexture(gl, gl.RGBA8, frameWidth, frameHeight);
-	const resizingStage = buildResizingStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite);
+	const segmentationTexture = this.createTexture(gl, gl.RGBA8, segmentationWidth, segmentationHeight);
+	const personMaskTexture = this.createTexture(gl, gl.RGBA8, frameWidth, frameHeight);
+	const resizingStage = this.buildResizingStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite);
 	const loadSegmentationStage = (segmentationConfig.model === 'meet')
-		? buildSoftmaxStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite, segmentationTexture)
-		: buildLoadSegmentationStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite, segmentationTexture)
-	// buildSoftmaxStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite, segmentationTexture);
-	const jointBilateralFilterStage = buildJointBilateralFilterStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationTexture, segmentationConfig, personMaskTexture, canvas);
+		? this.buildSoftmaxStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite, segmentationTexture)
+		: this.buildLoadSegmentationStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite, segmentationTexture)
+	const jointBilateralFilterStage = this.buildJointBilateralFilterStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationTexture, segmentationConfig, personMaskTexture, canvas);
 	const backgroundStage = backgroundConfig.type === 'blur'
-		? buildBackgroundBlurStage(gl, positionBuffer, texCoordBuffer, personMaskTexture, canvas)
-		: buildBackgroundImageStage(gl, positionBuffer, texCoordBuffer, personMaskTexture, backgroundImage, canvas);
+		? this.buildBackgroundBlurStage(gl, positionBuffer, texCoordBuffer, personMaskTexture, canvas)
+		: this.buildBackgroundImageStage(gl, positionBuffer, texCoordBuffer, personMaskTexture, backgroundImage, canvas);
 
 	async function render() {
 		gl.clearColor(0, 0, 0, 0);
@@ -307,11 +347,17 @@ function buildWebGL2Pipeline(sourcePlayback, backgroundImage, backgroundConfig, 
 	};
 }
 
-// CONCATENATED MODULE: ./src/pipelines/helpers/webglHelper.ts
-const glsl = String.raw;
-
-function createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer) {
-	const program = createProgram(gl, vertexShader, fragmentShader);
+/**
+ *
+ * @param gl
+ * @param vertexShader
+ * @param fragmentShader
+ * @param positionBuffer
+ * @param texCoordBuffer
+ * @returns {*}
+ */
+RenderingPipeline.prototype.createPiplelineStageProgram = function (gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer) {
+	const program = this.createProgram(gl, vertexShader, fragmentShader);
 	const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 	gl.enableVertexAttribArray(positionAttributeLocation);
 	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -323,7 +369,7 @@ function createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionB
 	return program;
 }
 
-function createProgram(gl, vertexShader, fragmentShader) {
+RenderingPipeline.prototype.createProgram = function (gl, vertexShader, fragmentShader) {
 	const program = gl.createProgram();
 	gl.attachShader(program, vertexShader);
 	gl.attachShader(program, fragmentShader);
@@ -336,7 +382,7 @@ function createProgram(gl, vertexShader, fragmentShader) {
 	return program;
 }
 
-function compileShader(gl, shaderType, shaderSource) {
+RenderingPipeline.prototype.compileShader = function (gl, shaderType, shaderSource) {
 	const shader = gl.createShader(shaderType);
 	gl.shaderSource(shader, shaderSource);
 	gl.compileShader(shader);
@@ -348,7 +394,7 @@ function compileShader(gl, shaderType, shaderSource) {
 	return shader;
 }
 
-function createTexture(gl, internalformat, width, height, minFilter = gl.NEAREST, magFilter = gl.NEAREST) {
+RenderingPipeline.prototype.createTexture = function (gl, internalformat, width, height, minFilter = gl.NEAREST, magFilter = gl.NEAREST) {
 	const texture = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -359,21 +405,21 @@ function createTexture(gl, internalformat, width, height, minFilter = gl.NEAREST
 	return texture;
 }
 
-async function readPixelsAsync(gl, x, y, width, height, format, type, dest) {
+RenderingPipeline.prototype.readPixelsAsync = async function (gl, x, y, width, height, format, type, dest) {
 	const buf = gl.createBuffer();
 	gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
 	gl.bufferData(gl.PIXEL_PACK_BUFFER, dest.byteLength, gl.STREAM_READ);
 	gl.readPixels(x, y, width, height, format, type, 0);
 	gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
-	await getBufferSubDataAsync(gl, gl.PIXEL_PACK_BUFFER, buf, 0, dest);
+	await this.getBufferSubDataAsync(gl, gl.PIXEL_PACK_BUFFER, buf, 0, dest);
 	gl.deleteBuffer(buf);
 	return dest;
 }
 
-async function getBufferSubDataAsync(gl, target, buffer, srcByteOffset, dstBuffer, dstOffset, length) {
+RenderingPipeline.prototype.getBufferSubDataAsync = async function (gl, target, buffer, srcByteOffset, dstBuffer, dstOffset, length) {
 	const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
 	gl.flush();
-	const res = await clientWaitAsync(gl, sync);
+	const res = await this.clientWaitAsync(gl, sync);
 	gl.deleteSync(sync);
 
 	if (res !== gl.WAIT_FAILED) {
@@ -383,7 +429,7 @@ async function getBufferSubDataAsync(gl, target, buffer, srcByteOffset, dstBuffe
 	}
 }
 
-function clientWaitAsync(gl, sync) {
+RenderingPipeline.prototype.clientWaitAsync = function (gl, sync) {
 	return new Promise(resolve => {
 		function test() {
 			const res = gl.clientWaitSync(sync, 0, 0);
@@ -405,9 +451,17 @@ function clientWaitAsync(gl, sync) {
 	});
 }
 
-// CONCATENATED MODULE: ./src/pipelines/webgl2/backgroundBlurStage.ts
-function buildBackgroundBlurStage(gl, positionBuffer, texCoordBuffer, personMaskTexture, canvas) {
-	const vertexShaderSource = glsl`#version 300 es
+/**
+ * backgroundBlurStage.ts
+ * @param gl
+ * @param positionBuffer
+ * @param texCoordBuffer
+ * @param personMaskTexture
+ * @param canvas
+ * @returns {{cleanUp: cleanUp, render: render}}
+ */
+RenderingPipeline.prototype.buildBackgroundBlurStage = function (gl, positionBuffer, texCoordBuffer, personMaskTexture, canvas) {
+	const vertexShaderSource = this.glsl`#version 300 es
 
     in vec2 a_position;
     in vec2 a_texCoord;
@@ -422,7 +476,7 @@ function buildBackgroundBlurStage(gl, positionBuffer, texCoordBuffer, personMask
       v_texCoord = a_texCoord;
     }
   `;
-	const fragmentShaderSource = glsl`#version 300 es
+	const fragmentShaderSource = this.glsl`#version 300 es
 
     precision highp float;
 
@@ -461,15 +515,15 @@ function buildBackgroundBlurStage(gl, positionBuffer, texCoordBuffer, personMask
 	const {width: outputWidth, height: outputHeight} = canvas;
 	const texelWidth = 1 / outputWidth;
 	const texelHeight = 1 / outputHeight;
-	const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-	const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-	const program = createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer);
+	const vertexShader = this.compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+	const fragmentShader = this.compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+	const program = this.createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer);
 	const inputFrameLocation = gl.getUniformLocation(program, 'u_inputFrame');
 	const personMaskLocation = gl.getUniformLocation(program, 'u_personMask');
 	const texelSizeLocation = gl.getUniformLocation(program, 'u_texelSize');
 	const flipYLocation = gl.getUniformLocation(program, 'u_flipY');
-	const texture1 = createTexture(gl, gl.RGBA8, outputWidth, outputHeight);
-	const texture2 = createTexture(gl, gl.RGBA8, outputWidth, outputHeight);
+	const texture1 = this.createTexture(gl, gl.RGBA8, outputWidth, outputHeight);
+	const texture2 = this.createTexture(gl, gl.RGBA8, outputWidth, outputHeight);
 	const frameBuffer1 = gl.createFramebuffer();
 	gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer1);
 	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture1, 0);
@@ -528,9 +582,18 @@ function buildBackgroundBlurStage(gl, positionBuffer, texCoordBuffer, personMask
 	};
 }
 
-// CONCATENATED MODULE: ./src/pipelines/webgl2/backgroundImageStage.ts
-function buildBackgroundImageStage(gl, positionBuffer, texCoordBuffer, personMaskTexture, backgroundImage, canvas) {
-	const vertexShaderSource = glsl`#version 300 es
+/**
+ * backgroundImageStage.ts
+ * @param gl
+ * @param positionBuffer
+ * @param texCoordBuffer
+ * @param personMaskTexture
+ * @param backgroundImage
+ * @param canvas
+ * @returns {{cleanUp: cleanUp, updateCoverage: updateCoverage, updateLightWrapping: updateLightWrapping, updateBlendMode: updateBlendMode, render: render}}
+ */
+RenderingPipeline.prototype.buildBackgroundImageStage = function (gl, positionBuffer, texCoordBuffer, personMaskTexture, backgroundImage, canvas) {
+	const vertexShaderSource = this.glsl`#version 300 es
 
     uniform vec2 u_backgroundScale;
     uniform vec2 u_backgroundOffset;
@@ -548,7 +611,7 @@ function buildBackgroundImageStage(gl, positionBuffer, texCoordBuffer, personMas
       v_backgroundCoord = a_texCoord * u_backgroundScale + u_backgroundOffset;
     }
   `;
-	const fragmentShaderSource = glsl`#version 300 es
+	const fragmentShaderSource = this.glsl`#version 300 es
 
     precision highp float;
 
@@ -586,9 +649,9 @@ function buildBackgroundImageStage(gl, positionBuffer, texCoordBuffer, personMas
   `;
 	const {width: outputWidth, height: outputHeight} = canvas;
 	const outputRatio = outputWidth / outputHeight;
-	const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-	const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-	const program = createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer);
+	const vertexShader = this.compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+	const fragmentShader = this.compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+	const program = this.createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer);
 	const backgroundScaleLocation = gl.getUniformLocation(program, 'u_backgroundScale');
 	const backgroundOffsetLocation = gl.getUniformLocation(program, 'u_backgroundOffset');
 	const inputFrameLocation = gl.getUniformLocation(program, 'u_inputFrame');
@@ -597,6 +660,7 @@ function buildBackgroundImageStage(gl, positionBuffer, texCoordBuffer, personMas
 	const coverageLocation = gl.getUniformLocation(program, 'u_coverage');
 	const lightWrappingLocation = gl.getUniformLocation(program, 'u_lightWrapping');
 	const blendModeLocation = gl.getUniformLocation(program, 'u_blendMode');
+
 	gl.useProgram(program);
 	gl.uniform2f(backgroundScaleLocation, 1, 1);
 	gl.uniform2f(backgroundOffsetLocation, 0, 0);
@@ -633,7 +697,7 @@ function buildBackgroundImageStage(gl, positionBuffer, texCoordBuffer, personMas
 	}
 
 	function updateBackgroundImage(backgroundImage) {
-		backgroundTexture = createTexture(gl, gl.RGBA8, backgroundImage.naturalWidth, backgroundImage.naturalHeight, gl.LINEAR, gl.LINEAR);
+		backgroundTexture = RenderingPipeline.prototype.createTexture(gl, gl.RGBA8, backgroundImage.naturalWidth, backgroundImage.naturalHeight, gl.LINEAR, gl.LINEAR);
 		gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, backgroundImage.naturalWidth, backgroundImage.naturalHeight, gl.RGBA, gl.UNSIGNED_BYTE, backgroundImage);
 		let xOffset = 0;
 		let yOffset = 0;
@@ -689,9 +753,20 @@ function buildBackgroundImageStage(gl, positionBuffer, texCoordBuffer, personMas
 	};
 }
 
-// CONCATENATED MODULE: ./src/pipelines/webgl2/jointBilateralFilterStage.ts
-function buildJointBilateralFilterStage(gl, vertexShader, positionBuffer, texCoordBuffer, inputTexture, segmentationConfig, outputTexture, canvas) {
-	const fragmentShaderSource = glsl`#version 300 es
+/**
+ * jointBilateralFilterStage.ts
+ * @param gl
+ * @param vertexShader
+ * @param positionBuffer
+ * @param texCoordBuffer
+ * @param inputTexture
+ * @param segmentationConfig
+ * @param outputTexture
+ * @param canvas
+ * @returns {{updateSigmaColor: updateSigmaColor, updateSigmaSpace: updateSigmaSpace, cleanUp: cleanUp, render: render}}
+ */
+RenderingPipeline.prototype.buildJointBilateralFilterStage = function (gl, vertexShader, positionBuffer, texCoordBuffer, inputTexture, segmentationConfig, outputTexture, canvas) {
+	const fragmentShaderSource = this.glsl`#version 300 es
 
     precision highp float;
 
@@ -742,12 +817,12 @@ function buildJointBilateralFilterStage(gl, vertexShader, positionBuffer, texCoo
       outColor = vec4(vec3(0.0), newVal);
     }
   `;
-	const [segmentationWidth, segmentationHeight] = inputResolutions[segmentationConfig.inputResolution];
+	const [segmentationWidth, segmentationHeight] = this.inputResolutions[segmentationConfig.inputResolution];
 	const {width: outputWidth, height: outputHeight} = canvas;
 	const texelWidth = 1 / outputWidth;
 	const texelHeight = 1 / outputHeight;
-	const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-	const program = createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer);
+	const fragmentShader = this.compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+	const program = this.createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer);
 	const inputFrameLocation = gl.getUniformLocation(program, 'u_inputFrame');
 	const segmentationMaskLocation = gl.getUniformLocation(program, 'u_segmentationMask');
 	const texelSizeLocation = gl.getUniformLocation(program, 'u_texelSize');
@@ -812,10 +887,18 @@ function buildJointBilateralFilterStage(gl, vertexShader, positionBuffer, texCoo
 	};
 }
 
-
-// CONCATENATED MODULE: ./src/pipelines/webgl2/resizingStage.ts
-function buildResizingStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite) {
-	const fragmentShaderSource = glsl`#version 300 es
+/**
+ * resizingStage.ts
+ * @param gl
+ * @param vertexShader
+ * @param positionBuffer
+ * @param texCoordBuffer
+ * @param segmentationConfig
+ * @param tflite
+ * @returns {{cleanUp: cleanUp, render: render}}
+ */
+RenderingPipeline.prototype.buildResizingStage = function (gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite) {
+	const fragmentShaderSource = this.glsl`#version 300 es
 
     precision highp float;
 
@@ -831,12 +914,12 @@ function buildResizingStage(gl, vertexShader, positionBuffer, texCoordBuffer, se
   `; // TFLite memory will be accessed as float32
 
 	const tfliteInputMemoryOffset = tflite._getInputMemoryOffset() / 4;
-	const [outputWidth, outputHeight] = inputResolutions[segmentationConfig.inputResolution];
+	const [outputWidth, outputHeight] = this.inputResolutions[segmentationConfig.inputResolution];
 	const outputPixelCount = outputWidth * outputHeight;
-	const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-	const program = createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer);
+	const fragmentShader = this.compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+	const program = this.createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer);
 	const inputFrameLocation = gl.getUniformLocation(program, 'u_inputFrame');
-	const outputTexture = createTexture(gl, gl.RGBA8, outputWidth, outputHeight);
+	const outputTexture = this.createTexture(gl, gl.RGBA8, outputWidth, outputHeight);
 	const frameBuffer = gl.createFramebuffer();
 	gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
 	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, outputTexture, 0);
@@ -850,7 +933,7 @@ function buildResizingStage(gl, vertexShader, positionBuffer, texCoordBuffer, se
 		gl.viewport(0, 0, outputWidth, outputHeight);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); // Downloads pixels asynchronously from GPU while rendering the current frame
 
-		readPixelsAsync(gl, 0, 0, outputWidth, outputHeight, gl.RGBA, gl.UNSIGNED_BYTE, outputPixels);
+		RenderingPipeline.prototype.readPixelsAsync(gl, 0, 0, outputWidth, outputHeight, gl.RGBA, gl.UNSIGNED_BYTE, outputPixels);
 
 		for (let i = 0; i < outputPixelCount; i++) {
 			const tfliteIndex = tfliteInputMemoryOffset + i * 3;
@@ -874,10 +957,19 @@ function buildResizingStage(gl, vertexShader, positionBuffer, texCoordBuffer, se
 	};
 }
 
-
-// CONCATENATED MODULE: ./src/pipelines/webgl2/softmaxStage.ts
-function buildSoftmaxStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite, outputTexture) {
-	const fragmentShaderSource = glsl`#version 300 es
+/**
+ * softmaxStage.ts
+ * @param gl
+ * @param vertexShader
+ * @param positionBuffer
+ * @param texCoordBuffer
+ * @param segmentationConfig
+ * @param tflite
+ * @param outputTexture
+ * @returns {{cleanUp: cleanUp, render: render}}
+ */
+RenderingPipeline.prototype.buildSoftmaxStage = function (gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite, outputTexture) {
+	const fragmentShaderSource = this.glsl`#version 300 es
 
     precision highp float;
 
@@ -897,11 +989,11 @@ function buildSoftmaxStage(gl, vertexShader, positionBuffer, texCoordBuffer, seg
   `; // TFLite memory will be accessed as float32
 
 	const tfliteOutputMemoryOffset = tflite._getOutputMemoryOffset() / 4;
-	const [segmentationWidth, segmentationHeight] = inputResolutions[segmentationConfig.inputResolution];
-	const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-	const program = createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer);
+	const [segmentationWidth, segmentationHeight] = this.inputResolutions[segmentationConfig.inputResolution];
+	const fragmentShader = this.compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+	const program = this.createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer);
 	const inputLocation = gl.getUniformLocation(program, 'u_inputSegmentation');
-	const inputTexture = createTexture(gl, gl.RG32F, segmentationWidth, segmentationHeight);
+	const inputTexture = this.createTexture(gl, gl.RG32F, segmentationWidth, segmentationHeight);
 	const frameBuffer = gl.createFramebuffer();
 	gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
 	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, outputTexture, 0);
@@ -931,9 +1023,19 @@ function buildSoftmaxStage(gl, vertexShader, positionBuffer, texCoordBuffer, seg
 	};
 }
 
-// CONCATENATED MODULE: .src/pipelines/webgl2/loadSegmentationStage.ts
-function buildLoadSegmentationStage(gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite, outputTexture) {
-	const fragmentShaderSource = glsl`#version 300 es
+/**
+ * loadSegmentationStage.ts
+ * @param gl
+ * @param vertexShader
+ * @param positionBuffer
+ * @param texCoordBuffer
+ * @param segmentationConfig
+ * @param tflite
+ * @param outputTexture
+ * @returns {{cleanUp: cleanUp, render: render}}
+ */
+RenderingPipeline.prototype.buildLoadSegmentationStage = function (gl, vertexShader, positionBuffer, texCoordBuffer, segmentationConfig, tflite, outputTexture) {
+	const fragmentShaderSource = this.glsl`#version 300 es
     precision highp float;
     uniform sampler2D u_inputSegmentation;
     in vec2 v_texCoord;
@@ -946,12 +1048,12 @@ function buildLoadSegmentationStage(gl, vertexShader, positionBuffer, texCoordBu
 
 	// TFLite memory will be accessed as float32
 	const tfliteOutputMemoryOffset = tflite._getOutputMemoryOffset() / 4
-	const [segmentationWidth, segmentationHeight] = inputResolutions[segmentationConfig.inputResolution]
+	const [segmentationWidth, segmentationHeight] = this.inputResolutions[segmentationConfig.inputResolution]
 
-	const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)
-	const program = createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer)
+	const fragmentShader = this.compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)
+	const program = this.createPiplelineStageProgram(gl, vertexShader, fragmentShader, positionBuffer, texCoordBuffer)
 	const inputLocation = gl.getUniformLocation(program, 'u_inputSegmentation')
-	const inputTexture = createTexture(gl, gl.R32F, segmentationWidth, segmentationHeight)
+	const inputTexture = this.createTexture(gl, gl.R32F, segmentationWidth, segmentationHeight)
 
 	const frameBuffer = gl.createFramebuffer()
 	gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer)

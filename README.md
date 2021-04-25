@@ -2,6 +2,8 @@
 
 ## 修改记录
 
+- 2021.4.25 优化代码，封装RenderingPipeline类，提供统一接口
+
 - 2021.4.23 
     - 添加WebGL 2选择
     - 完成WebGL 2转换，解决canvas黑屏问题：pipeline 没有更新updatePostProcessingConfig

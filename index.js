@@ -1,8 +1,8 @@
 let localVideo = document.getElementById('localVideo')
 let canvas = document.getElementById('canvasRef')
-let bgImg = document.getElementById('bgImg')
+let backgroundImageRef = document.getElementById('bgImg')
 let localStream
-let tflite
+let usePipeline
 let constraints = {
 	video: {
 		width: 640,
@@ -158,14 +158,14 @@ function pipeSelectChange(){
 	parent.appendChild(newCavans)
 	canvas = newCavans
 
-	pipeConversion2Cavans(true)
+	pipeConversion2Cavans(pipeChange)
 }
 
 function modelSelectChange(){
-	pipeConversion2Cavans(true)
+	pipeConversion2Cavans()
 }
 
-async function pipeConversion2Cavans(update){
+async function pipeConversion2Cavans(){
 	let sourcePlayback = {
 		htmlElement: localVideo,
 		width: localVideo.videoWidth,
@@ -178,36 +178,31 @@ async function pipeConversion2Cavans(update){
 		pipeline: getSelectVaule('pipeSelect'),
 	}
 	let canvasRef = {current: canvas}
-	console.warn("sourcePlayback: ", sourcePlayback)
-	console.warn('segmentationConfig: ', segmentationConfig)
-	console.warn('backgroundConfig: ', backgroundConfig)
-	console.warn("canvasRef: ", canvasRef)
-	if(!update){
-		tflite = await createTFLiteModule()
-		console.warn('tflite: ', tflite)
-		await loadTFLiteModel(tflite, segmentationConfig)
+	console.log("sourcePlayback: ", sourcePlayback)
+	console.log('segmentationConfig: ', segmentationConfig)
+	console.log('backgroundConfig: ', backgroundConfig)
+	console.log("canvasRef: ", canvasRef)
+
+	if(!usePipeline){
+		usePipeline = new RenderingPipeline()
 	}
+	usePipeline.useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, backgroundImageRef)
 
 	if(segmentationConfig.pipeline === 'webgl2'){
-		bgImg.hidden = true
+		backgroundImageRef.hidden = true
 	}else {
-		bgImg.hidden = false
+		backgroundImageRef.hidden = false
 	}
-
-	let pipeline = useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, tflite, bgImg)
-
-	console.warn("show video stream get from canvas!")
 	getCanvasStream()
 }
 
-let backgroundConfig = {type: "image", url: bgImg.src}
+let backgroundConfig = {type: "image", url: backgroundImageRef.src}
 function backgroundChange(config){
 	console.log('backgroundChange: ', config)
 	backgroundConfig.type = config.type
 	backgroundConfig.url = config.url
-	bgImg.src = config.url
-
-	pipeConversion2Cavans(true)
+	backgroundImageRef.src = config.url
+	pipeConversion2Cavans()
 }
 
 window.onload = async function (){
