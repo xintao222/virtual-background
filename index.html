@@ -16,7 +16,7 @@
                 <video class="makeStyles-sourcePlayback-7" id="localVideo" autoplay controls></video>
             </div>
             <div class="makeStyles-root-8">
-                <img class="makeStyles-render-9" id="bgImg"  src="public/backgrounds/architecture-5082700_1280.jpg">
+                <img hidden class="makeStyles-render-9" id="bgImg"  src="public/backgrounds/qie.jpg">
                 <div id="cavansArea">
                     <canvas class="makeStyles-render-9" id="canvasRef"></canvas>
                 </div>
@@ -29,7 +29,12 @@
 <div style="width: 50%; float: left;position: relative;max-width: 620px;">
     <table style="clear: both">
         <tr><th colspan="2">配置项列表</th></tr>
-        <tr><td>Model</td><td>Meet</td></tr>
+        <tr><td>Model</td><td>
+            <select id="modelSelect" onchange="modelSelectChange()">
+                <option value="meet" selected>Meet</option>
+<!--                <option value="mlkit">ML Kit</option>-->
+            </select>
+        </td></tr>
         <tr><td>Backend</td><td>WebAssembly SIMD</td></tr>
         <tr><td>Pipeline</td><td>
             <select id="pipeSelect" onchange="pipeSelectChange()">
@@ -40,18 +45,27 @@
         <tr>
             <td>Input resolution</td>
             <td>
-                <select id="resSelect" onchange="resolutionChange()">
-                    <option value="96p" selected>96p</option>
-                    <option value="144p">144p</option>
-                    <option value="360p">360p</option>
-                    <option value="720p">720p</option>
-                    <option value="1080p">1080p</option>
+                <select id="resSelect" onchange="getVideoStream()">
+                    <option value="160x96" selected>96p</option>
+                    <option value="256x144">144p</option>
+                    <option value="640x360">360p</option>
                 </select>
             </td>
         </tr>
         <tr>
             <td> <span>videoInput select: </span></td>
             <td><select class="cameraSelect" id="videoList" onchange = getVideoStream()></select></td>
+        </tr>
+
+        <tr>
+            <td>videoInput res</td>
+            <td>
+                <select id="videoInputRes" onchange="videoInputResChange()">
+                    <option value="360p">640x360</option>
+                    <option value="720p">1280x720</option>
+                    <option value="1080p">1920x1080</option>
+                </select>
+            </td>
         </tr>
     </table>
 
@@ -68,6 +82,12 @@
             </svg>
         </button>
 
+        <button class="backgroundButton" onclick="backgroundChange({type: 'image', url: 'public/backgrounds/xiaoliu.jpg'})">
+            <img class="backgroundImg" src="public/backgrounds/xiaoliu.jpg">
+        </button>
+        <button class="backgroundButton" onclick="backgroundChange({type: 'image', url: 'public/backgrounds/qie.jpg'})">
+            <img class="backgroundImg" src="public/backgrounds/qie.jpg">
+        </button>
         <button class="backgroundButton" onclick="backgroundChange({type: 'image', url: 'public/backgrounds/architecture-5082700_1280.jpg'})">
             <img class="backgroundImg" src="public/backgrounds/architecture-5082700_1280.jpg">
         </button>
@@ -83,7 +103,7 @@
     </div>
 </div>
 <div style=" width: 50%; float: left;position: relative;max-width: 620px;">
-    <video id="captureStreamVideo" src="" autoplay></video>
+    <video id="captureStreamVideo" src="" autoplay style="width: 100%;"></video>
     <span class="MuiTypography-root makeStyles-stats-10 MuiTypography-caption">从canvas获取的视频流</span>
 </div>
 
