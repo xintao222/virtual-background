@@ -146,6 +146,10 @@ async function pipeConversion2Cavans(newStream){
 		model: getSelectVaule('modelSelect') || 'meet',
 		pipeline: getSelectVaule('pipeSelect'),
 	}
+	if(segmentationConfig.model === 'mlkit'){
+		segmentationConfig.inputResolution = '256x256'
+	}
+
 	console.log("sourcePlayback: ", sourcePlayback)
 	console.log('segmentationConfig: ', segmentationConfig)
 	console.log('backgroundConfig: ', backgroundConfig)

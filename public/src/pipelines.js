@@ -113,7 +113,7 @@ RenderingPipeline.prototype.useRenderingPipeline = async function (sourcePlaybac
 	if(!this.tflite){
 		console.log('load tflite module..')
 		this.tflite = await createTFLiteModule()
-		await usePipeline.loadTFLiteModel(this.tflite, segmentationConfig)
+		await this.loadTFLiteModel(this.tflite, segmentationConfig)
 	}
 	// if(this.renderRequestId){
 	// 	await cancelAnimationFrame(this.renderRequestId);
@@ -215,19 +215,24 @@ RenderingPipeline.prototype.buildCanvas2dPipeline = function (sourcePlayback, ba
 	}
 
 	function runTFLiteInference() {
-		tflite._runInference();
+		tflite._runInference()
 
 		for (let i = 0; i < segmentationPixelCount; i++) {
-			const background = tflite.HEAPF32[outputMemoryOffset + i * 2];
-			const person = tflite.HEAPF32[outputMemoryOffset + i * 2 + 1];
-			const shift = Math.max(background, person);
-			const backgroundExp = Math.exp(background - shift);
-			const personExp = Math.exp(person - shift); // Sets only the alpha component of each pixel
+			if (segmentationConfig.model === 'meet') {
+				const background = tflite.HEAPF32[outputMemoryOffset + i * 2]
+				const person = tflite.HEAPF32[outputMemoryOffset + i * 2 + 1]
+				const shift = Math.max(background, person)
+				const backgroundExp = Math.exp(background - shift)
+				const personExp = Math.exp(person - shift)
 
-			segmentationMask.data[i * 4 + 3] = 255 * personExp / (backgroundExp + personExp); // softmax
+				// Sets only the alpha component of each pixel
+				segmentationMask.data[i * 4 + 3] = (255 * personExp) / (backgroundExp + personExp) // softmax
+			} else if (segmentationConfig.model === 'mlkit') {
+				const person = tflite.HEAPF32[outputMemoryOffset + i]
+				segmentationMask.data[i * 4 + 3] = 255 * person
+			}
 		}
-
-		segmentationMaskCtx.putImageData(segmentationMask, 0, 0);
+		segmentationMaskCtx.putImageData(segmentationMask, 0, 0)
 	}
 
 	function runPostProcessing() {
