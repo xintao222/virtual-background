@@ -77,35 +77,6 @@ function closeStream(stream){
 	stream = null
 }
 
-async function getVideoStream(){
-	console.warn("get video stream...")
-	try {
-		if(localStream){
-			closeStream(localStream)
-		}
-
-		let deviceId = getSelectVaule('videoList')
-		if(deviceId){
-			console.log('set deviceId: ', deviceId)
-			constraints.video.deviceId = {
-				exact: deviceId
-			}
-		}
-
-		console.log('getuserMedia constraints: ', JSON.stringify(constraints, null, '    '))
-		localStream = await navigator.mediaDevices.getUserMedia(constraints)
-		console.log('localStream: ', localStream)
-
-		localVideo.srcObject = localStream
-		localVideo.onloadedmetadata = async function (){
-			console.log('video onloadedmetadata.')
-			pipeConversion2Cavans()
-		}
-	}catch (error){
-		console.error(error)
-	}
-}
-
 /**
  * 改变分辨率
  */
@@ -130,37 +101,29 @@ function videoInputResChange(){
 	getVideoStream()
 }
 
-async function pipeConversion2Cavans(){
-	let sourcePlayback = {
-		htmlElement: localVideo,
-		width: localVideo.videoWidth,
-		height: localVideo.videoHeight,
-	}
-	let segmentationConfig = {
-		backend: "wasmSimd",
-		inputResolution: getSelectVaule('resSelect'),
-		model: getSelectVaule('modelSelect') || 'meet',
-		pipeline: getSelectVaule('pipeSelect'),
-	}
-	console.log("sourcePlayback: ", sourcePlayback)
-	console.log('segmentationConfig: ', segmentationConfig)
-	console.log('backgroundConfig: ', backgroundConfig)
-
-	if(segmentationConfig.pipeline === 'webgl2'){
-		backgroundImageRef.hidden = true
-	}else {
-		backgroundImageRef.hidden = false
-	}
-
-	if(!usePipeline){
-		usePipeline = new RenderingPipeline()
-	}
-	usePipeline.useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, backgroundImageRef, function (data){
-		console.warn("data: ", data)
-		if(data.stream){
-			captureStreamVideo.srcObject = data.stream
+async function getVideoStream(){
+	console.warn("get video stream...")
+	try {
+		let streamChange = false
+		if(localStream){
+			closeStream(localStream)
+			streamChange = true
 		}
-	})
+		let deviceId = getSelectVaule('videoList')
+		if(deviceId){
+			console.log('set deviceId: ', deviceId)
+			constraints.video.deviceId = {
+				exact: deviceId
+			}
+		}
+
+		console.log('getuserMedia constraints: ', JSON.stringify(constraints, null, '    '))
+		localStream = await navigator.mediaDevices.getUserMedia(constraints)
+		console.log('localStream: ', localStream)
+		pipeConversion2Cavans(streamChange)
+	}catch (error){
+		console.error(error)
+	}
 }
 
 let backgroundConfig = {type: "image", url: backgroundImageRef.src}
@@ -172,9 +135,46 @@ function backgroundChange(config){
 	pipeConversion2Cavans()
 }
 
+async function pipeConversion2Cavans(newStream){
+	let sourcePlayback = {
+		sourceStream: localStream,
+		newStream: newStream
+	}
+	let segmentationConfig = {
+		backend: "wasmSimd",
+		inputResolution: getSelectVaule('resSelect'),
+		model: getSelectVaule('modelSelect') || 'meet',
+		pipeline: getSelectVaule('pipeSelect'),
+	}
+	console.log("sourcePlayback: ", sourcePlayback)
+	console.log('segmentationConfig: ', segmentationConfig)
+	console.log('backgroundConfig: ', backgroundConfig)
+
+	if(!usePipeline){
+		usePipeline = new RenderingPipeline()
+	}
+	usePipeline.useRenderingPipeline(sourcePlayback, backgroundConfig, segmentationConfig, backgroundImageRef, function (data){
+		console.warn("useRenderingPipeline callback data: ", data)
+		if(data.canvas){
+			let canvas = data.canvas
+			let stream
+			if(canvas.captureStream){
+				stream = canvas.captureStream()
+			}else if(canvas.mozCaptureStream){
+				stream = canvas.mozCaptureStream()
+			}else {
+				log.error('Current browser does not support captureStream!!')
+			}
+			localVideo.srcObject = stream
+			createPeerConnection(stream)
+		}
+	})
+}
+
 window.onload = async function (){
 	console.log('window is onload..')
 	getVideoStream()
 }
 
+/*************************************************************************************************************/
 

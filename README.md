@@ -2,6 +2,8 @@
 
 ## 修改记录
 
+- 2021.4.26 添加点对点链接，传输和显示视频流
+
 - 2021.4.25 优化代码，封装RenderingPipeline类，提供统一接口
 
 - 2021.4.23 
@@ -44,4 +46,6 @@
 
 - 5.Uncaught (in promise) RuntimeError: abort(CompileError: WebAssembly.instantiate(): expected magic word 00 61 73 6d, found 41 47 46 7a @+0). Build with -s ASSERTIONS=1 for more info.
     - 原因：wasm 文件不正确
-    
+
+- 6.INVALID_VALUE: tex(Sub)Image2D: video visible size is empty
+    - Cause: video没有play

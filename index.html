@@ -13,19 +13,25 @@
     <div class="makeStyles-root-1">
         <div class="MuiPaper-root makeStyles-root-3 MuiPaper-elevation1 MuiPaper-rounded">
             <div class="makeStyles-root-6">
-                <video class="makeStyles-sourcePlayback-7" id="localVideo" autoplay controls></video>
+                <video class="makeStyles-sourcePlayback-7" id="localVideo" autoplay ></video>
+                <div id="localVideoStatus" class="MuiTypography-root MuiTypography-caption" style="position: absolute; bottom: 0;color: aliceblue;left: 0"></div>
+                <span class="MuiTypography-root makeStyles-stats-10 MuiTypography-caption">local video stream get from canvas</span>
             </div>
             <div class="makeStyles-root-8">
                 <img hidden class="makeStyles-render-9" id="bgImg"  src="public/backgrounds/qie.jpg">
-                <div id="canvasArea">
-<!--                    <canvas class="makeStyles-render-9" id="canvasRef"></canvas>-->
+                <video class="makeStyles-sourcePlayback-7" src="" id="remoteVideo" autoplay></video>
+                <div class="MuiTypography-root MuiTypography-caption" style="position: absolute; bottom: 0;color: aliceblue;">
+                    <div id="remoteVideoStatus"></div>
+                    <div id="bitrate"></div>
+                    <div id="peer"></div>
                 </div>
-                <span class="MuiTypography-root makeStyles-stats-10 MuiTypography-caption">转换后的canvas显示效果</span>
+                <span class="MuiTypography-root makeStyles-stats-10 MuiTypography-caption">remote video</span>
             </div>
         </div>
     </div>
 </div>
 
+<div>
 <div style="width: 50%; float: left;position: relative;max-width: 620px;">
     <table style="clear: both">
         <tr><th colspan="2">配置项列表</th></tr>
@@ -102,14 +108,11 @@
         </button>
     </div>
 </div>
-<div style=" width: 50%; float: left;position: relative;max-width: 620px;">
-    <video id="captureStreamVideo" src="" autoplay style="width: 100%;"></video>
-    <span class="MuiTypography-root makeStyles-stats-10 MuiTypography-caption">从canvas获取的视频流</span>
-</div>
 
 <script src="public/tflite/tflite.js"></script>
 <script src="public/tflite/tflite-simd.js"></script>
 <script src="public/src/pipelines.js"></script>
+<script src="peerConnection.js"></script>
 <script src="index.js"></script>
 
 

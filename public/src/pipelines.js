@@ -3,9 +3,9 @@ function RenderingPipeline(){
 	this.glsl = String.raw
 	this.pipeline = null
 	this.tflite = null
+	this.videoElement = null
 	this.canvasRef= null
 	this.renderRequestId = null
-	this.canvas2stream = null
 
 	this.sourcePlayback = null
 	this.backgroundConfig = null
@@ -95,27 +95,21 @@ RenderingPipeline.prototype.loadTFLiteModel = async function (tflite, segmentati
  * todo: 重新创建canvas，以解决canvas getContext（“2d”）返回null问题，canvas请求过其他类型后不能再请求不同类型的上下文
  * @returns {HTMLCanvasElement}
  */
-RenderingPipeline.prototype.getNewCanvas = function (){
+RenderingPipeline.prototype.getNewCanvas = function (videoPlayer){
+	if(!videoPlayer){
+		console.warn("'videoPlayer is not found")
+	}
 	if(this.canvasRef && this.canvasRef.current){
 		this.canvasRef.current.remove()
 	}
 	let canvas = document.createElement('canvas')
-	canvas.id = 'canvasRef'
-	canvas.width = localVideo.videoWidth
-	canvas.height = localVideo.videoHeight
-
-	if(canvas.captureStream){
-		this.canvas2stream = canvas.captureStream()
-	}else if(canvas.mozCaptureStream){
-		this.canvas2stream = canvas.mozCaptureStream()
-	}else {
-		log.error('Current browser does not support captureStream!!')
-	}
-
+	canvas.width = videoPlayer.videoWidth
+	canvas.height = videoPlayer.videoHeight
 	return canvas
 }
 
 RenderingPipeline.prototype.useRenderingPipeline = async function (sourcePlayback, backgroundConfig, segmentationConfig, backgroundImageRef, callback){
+	let This = this
 	if(!this.tflite){
 		console.log('load tflite module..')
 		this.tflite = await createTFLiteModule()
@@ -128,36 +122,51 @@ RenderingPipeline.prototype.useRenderingPipeline = async function (sourcePlaybac
 	// 	this.pipeline = null;
 	// 	this.renderRequestId = null
 	// }
-	let canvasRef = {
-		current: this.getNewCanvas()
+
+	function getPipeline(){
+		let canvasRef = {
+			current: This.getNewCanvas(This.videoElement)
+		}
+		let sourcePlayback = {
+			htmlElement: This.videoElement,
+			width: This.videoElement.videoWidth,
+			height: This.videoElement.videoHeight,
+		}
+
+		let newPipeline = segmentationConfig.pipeline === 'webgl2'
+			? This.buildWebGL2Pipeline(sourcePlayback, backgroundImageRef, backgroundConfig, segmentationConfig, canvasRef.current, This.tflite)
+			: This.buildCanvas2dPipeline(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef.current, This.tflite);
+		async function render(This) {
+			await newPipeline.render();
+			This.renderRequestId = requestAnimationFrame(render);
+		}
+		render(This);
+		console.warn('Animation started:', sourcePlayback, backgroundConfig, segmentationConfig);
+
+		This.pipeline = newPipeline
+		newPipeline.updatePostProcessingConfig(This.postProcessingConfig);
+		This.setProcessingConfig(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, backgroundImageRef)
+
+		callback && callback({canvas: This.canvasRef.current})
 	}
 
-	let newPipeline = segmentationConfig.pipeline === 'webgl2' ? this.buildWebGL2Pipeline(
-		sourcePlayback,
-		backgroundImageRef,
-		backgroundConfig,
-		segmentationConfig,
-		canvasRef.current,
-		this.tflite
-	) : this.buildCanvas2dPipeline(
-		sourcePlayback,
-		backgroundConfig,
-		segmentationConfig,
-		canvasRef.current,
-		this.tflite
-	);
-	async function render(This) {
-		await newPipeline.render();
-		This.renderRequestId = requestAnimationFrame(render);
+	if(sourcePlayback.newStream){
+		console.warn("get new video stream", sourcePlayback.newStream)
+		This.videoElement.remove()
+		This.videoElement = null
 	}
-	render(this);
-	console.warn('Animation started:', sourcePlayback, backgroundConfig, segmentationConfig);
 
-	this.pipeline = newPipeline
-	newPipeline.updatePostProcessingConfig(this.postProcessingConfig);
-	this.setProcessingConfig(sourcePlayback, backgroundConfig, segmentationConfig, canvasRef, backgroundImageRef)
-
-	callback && callback({stream: this.canvas2stream})
+	if(!this.videoElement){
+		let videoPlayer = document.createElement('video')
+		videoPlayer.srcObject = sourcePlayback.sourceStream
+		videoPlayer.crossOrigin = "anonymous";
+		videoPlayer.autoplay = true
+		videoPlayer.hidden = true
+		This.videoElement = videoPlayer
+		This.videoElement.onloadedmetadata = getPipeline
+	}else {
+		getPipeline()
+	}
 }
 
 RenderingPipeline.prototype.buildCanvas2dPipeline = function (sourcePlayback, backgroundConfig, segmentationConfig, canvas, tflite) {
