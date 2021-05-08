@@ -1,33 +1,11 @@
 
-
-## 修改记录
-
-- 2021.4.27 添加visibilitychange监听，解决页面处于非活动状态时canvas不绘制问题
-
-- 2021.4.26 
-    - 添加点对点链接，传输和显示视频流
-    - 添加mlkit配置项
-
-- 2021.4.25 优化代码，封装RenderingPipeline类，提供统一接口
-
-- 2021.4.23 
-    - 添加WebGL 2选择
-    - 完成WebGL 2转换，解决canvas黑屏问题：pipeline 没有更新updatePostProcessingConfig
-    - canvas.getContext('2d') 返回undefined：原因是canvas请求了不同类型的上下文，就可能会发生这种情况。
-                                             
-- 2021.4.22 添加摄像头选择、配置项设置和背景图片切换
-
-- 2021.4.21 初步实现react和webpack关联部分的剥离，摘除主要代码实现背景虚拟处理
-
-- 2021.4.8 first commit
-
 ## 使用说明
 
 ### 引用文件
 ```
-<script src="public/tflite/tflite.js"></script>
-<script src="public/tflite/tflite-simd.js"></script>
-<script src="public/src/pipelines.js"></script>
+<script src="lib/tflite/tflite.js"></script>
+<script src="lib/tflite/tflite-simd.js"></script>
+<script src="lib/tflite/pipelines.js"></script>
 ```
 
 ## 参考
